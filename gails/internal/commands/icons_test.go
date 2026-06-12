@@ -280,8 +280,8 @@ func TestGenerateIcon(t *testing.T) {
 						panic(err)
 					}
 				}()
-				// The size of the file should be 571 bytes
-				if f.Size() != 571 {
+				// The size of the file should be 711 bytes
+				if f.Size() != 711 {
 					return fmt.Errorf("appicon.ico is not the correct size. Got %d", f.Size())
 				}
 				if f.IsDir() {
@@ -346,7 +346,7 @@ func TestGenerateIcon(t *testing.T) {
 			},
 			wantErr: false,
 			test: func(t *testing.T, options *IconsOptions) error {
-				// Test the file exists and has 571 bytes
+				// Test the file exists and has 711 bytes
 				f, err := os.Stat("appicon.ico")
 				if err != nil {
 					return err
@@ -357,7 +357,7 @@ func TestGenerateIcon(t *testing.T) {
 						panic(err)
 					}
 				}()
-				if f.Size() != 571 {
+				if f.Size() != 711 {
 					return fmt.Errorf("appicon.ico is not the correct size. Got %d", f.Size())
 				}
 				if f.IsDir() {
