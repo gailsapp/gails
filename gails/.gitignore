@@ -1,0 +1,14 @@
+examples/kitchensink/kitchensink
+cmd/gails/gails
+/examples/systray-menu/systray
+/examples/window/window
+/examples/dialogs/dialogs
+/examples/menu/menu
+/examples/clipboard/clipboard
+/examples/plain/plain
+/cmd/gails/ui/.task/
+!internal/commands/webview2/MicrosoftEdgeWebview2Setup.exe
+internal/commands/appimage_testfiles/appimage_testfiles
+testiosapp/
+test/manual/systray/bin/
+output/

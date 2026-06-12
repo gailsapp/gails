@@ -1,0 +1,11 @@
+//gails:include js/test.js
+//gails:include **:js/test_all.js
+//gails:include *c:js/test_c.js
+//gails:include *i:js/test_i.js
+//gails:include j*:js/test_j.js
+//gails:include jc:js/test_jc.js
+//gails:include ji:js/test_ji.js
+//gails:include t*:js/test_t.ts
+//gails:include tc:js/test_tc.ts
+//gails:include ti:js/test_ti.ts
+package main

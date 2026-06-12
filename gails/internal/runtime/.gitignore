@@ -1,0 +1,5 @@
+node_modules
+.task
+*.tsbuildinfo
+desktop/@gailsio/runtime/dist/
+desktop/@gailsio/runtime/types/
