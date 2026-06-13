@@ -302,30 +302,22 @@ jobs:
       - name: Generate template '${{ matrix.template }}' (GTK4 default)
         shell: bash
         run: |
-          # 获取 runtime.tgz 的绝对路径
           RUNTIME_TGZ_FILE=$(ls gails-runtime-temp/*.tgz | head -1)
           
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            # Windows: 转换为 Windows 风格路径，然后转为 file:// URL
             WIN_PATH=$(cygpath -w "$RUNTIME_TGZ_FILE" | sed 's/\\/\//g')
             RUNTIME_TGZ_URL="file:///$WIN_PATH"
           else
-            # Linux/macOS: 直接使用绝对路径
             RUNTIME_TGZ_URL="file://$(pwd)/$RUNTIME_TGZ_FILE"
           fi
           
-          mkdir -p ./test-${{ matrix.template }}
-          cd ./test-${{ matrix.template }}
-          gails init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ${{ matrix.template }}/frontend
-          
-          # 替换依赖
+          mkdir -p "./test-${{ matrix.template }}"
+          cd "./test-${{ matrix.template }}"
+          gails init -n "${{ matrix.template }}" -t "${{ matrix.template }}"
+          cd "${{ matrix.template }}/frontend"
           npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
-          
-          cd ..
+          cd ../..
           gails build
-
-      # GTK3 legacy template builds are covered by the Go example compilation tests above.
 
   build_results:
     if: ${{ always() }}
