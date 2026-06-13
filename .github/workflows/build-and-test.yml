@@ -325,13 +325,27 @@ jobs:
           echo "✅ Runtime package found: $(ls gails-runtime-temp/*.tgz)"
 
       - name: Generate and build template '${{ matrix.template }}'
+        # WAILS_USE_WAKE=true routes the gails build through the embedded
+        # Go-native Taskfile executor (wake) instead of the external `task`
+        # CLI installed by arduino/setup-task. wake is the executor shipped
+        # with this repo, so its template expansion (e.g. `{{.OS}}` inside
+        # `preconditions: sh:`) matches the source tree; the external CLI
+        # on the CI runner doesn't always expand these correctly, which
+        # spuriously fails the `darwin:build:native` precondition on the
+        # macOS host.
+        env:
+          WAILS_USE_WAKE: 'true'
         shell: bash
         run: |
           RUNTIME_TGZ_FILE=$(ls gails-runtime-temp/*.tgz | head -1)
           
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            WIN_PATH=$(cygpath -w "$RUNTIME_TGZ_FILE" | sed 's/\\/\//g')
-            RUNTIME_TGZ_URL="file:///$WIN_PATH"
+            # On Windows, npm mis-parses file:///D:/... URLs (treats D: as
+            # host and drops the intermediate path segments). Hand it a
+            # plain absolute Windows path instead — npm accepts that as a
+            # local tarball source on Windows runners.
+            WIN_PATH=$(cygpath -w "$(pwd)/$RUNTIME_TGZ_FILE")
+            RUNTIME_TGZ_URL="$WIN_PATH"
           else
             RUNTIME_TGZ_URL="file://$(pwd)/$RUNTIME_TGZ_FILE"
           fi
@@ -361,6 +375,8 @@ jobs:
 
       - name: Test GTK3 legacy (Linux only)
         if: matrix.os == 'ubuntu-latest' && matrix.template == 'react'
+        env:
+          WAILS_USE_WAKE: 'true'
         shell: bash
         run: |
           # Re-anchor to the job workspace root before referencing
