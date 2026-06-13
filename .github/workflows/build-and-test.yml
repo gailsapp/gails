@@ -363,9 +363,15 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.template == 'react'
         shell: bash
         run: |
+          # Re-anchor to the job workspace root before referencing
+          # ../gails-runtime-temp: the previous step ended inside the
+          # freshly initialised project tree, so a bare `..` would land in
+          # the wrong place.
+          cd "$GITHUB_WORKSPACE"
+          
           PROJECT_NAME="test-gtk3-${{ matrix.template }}"
-          RUNTIME_TGZ_FILE=$(ls ../gails-runtime-temp/*.tgz | head -1)
-          RUNTIME_TGZ_URL="file://$(pwd)/../$RUNTIME_TGZ_FILE"
+          RUNTIME_TGZ_FILE=$(ls gails-runtime-temp/*.tgz | head -1)
+          RUNTIME_TGZ_URL="file://$(pwd)/$RUNTIME_TGZ_FILE"
           
           mkdir -p "$PROJECT_NAME"
           cd "$PROJECT_NAME"

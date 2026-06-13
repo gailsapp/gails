@@ -3,10 +3,22 @@ package kvstore
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/gailsapp/gails/pkg/application"
 )
+
+// skipIfWindowsReadOnlyFails skips tests that rely on a read-only directory
+// actually preventing writes. The GitHub Actions Windows runner lets its
+// `runner` user write through a mode-0555 directory even though POSIX-style
+// semantics say it shouldn't, so these tests spuriously fail there. Skip on
+// windows; other platforms keep full coverage.
+func skipIfWindowsReadOnlyFails(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("read-only dir mode not enforced on Windows runner")
+	}
+}
 
 func TestNew(t *testing.T) {
 	kvs := New()
@@ -151,6 +163,7 @@ func TestSave(t *testing.T) {
 }
 
 func TestSave_Error(t *testing.T) {
+	skipIfWindowsReadOnlyFails(t)
 	dir := t.TempDir()
 	path := filepath.Join(dir, "readonly", "store.json")
 	if err := os.Mkdir(filepath.Dir(path), 0555); err != nil {
@@ -168,6 +181,7 @@ func TestSave_Error(t *testing.T) {
 }
 
 func TestServiceShutdown_Error(t *testing.T) {
+	skipIfWindowsReadOnlyFails(t)
 	dir := t.TempDir()
 	path := filepath.Join(dir, "readonly", "store.json")
 	if err := os.Mkdir(filepath.Dir(path), 0555); err != nil {
@@ -274,6 +288,7 @@ func TestSet_AutoSave(t *testing.T) {
 }
 
 func TestSet_AutoSaveError(t *testing.T) {
+	skipIfWindowsReadOnlyFails(t)
 	dir := t.TempDir()
 	path := filepath.Join(dir, "readonly", "store.json")
 	if err := os.Mkdir(filepath.Dir(path), 0555); err != nil {

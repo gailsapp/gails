@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gailsapp/gails/internal/wake/ast"
+	"github.com/gailsapp/gails/internal/wake/parse"
 	"github.com/gailsapp/gails/internal/wake/platform"
 )
 
@@ -19,16 +20,23 @@ var cache = &runCache{
 	lastRuns: make(map[string]time.Time),
 }
 
-func checkPreconditions(task *ast.Task) error {
+func checkPreconditions(task *ast.Task, vars map[string]*ast.Var) error {
 	for _, pc := range task.Precondition {
 		if pc.Sh == "" {
 			continue
 		}
-		c := platform.ShellCommand(pc.Sh)
+		// wake pre-expanded builtins (OS, ARCH, …) at parse time, but
+		// task-level vars and CLI vars only become available in the merged
+		// vars that the executor computes right before running each task.
+		// Re-expand against that set so references like `{{.OBFUSCATED}}`
+		// resolve to the current invocation's value rather than staying as
+		// literal `{{...}}` tokens in the shell command.
+		sh := parse.ExpandTemplates(pc.Sh, vars)
+		c := platform.ShellCommand(sh)
 		if err := c.Run(); err != nil {
 			msg := pc.Msg
 			if msg == "" {
-				msg = fmt.Sprintf("precondition failed: %q", pc.Sh)
+				msg = fmt.Sprintf("precondition failed: %q", sh)
 			}
 			return fmt.Errorf("wake: %s", msg)
 		}

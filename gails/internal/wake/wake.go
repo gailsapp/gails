@@ -311,6 +311,17 @@ func expandTemplates(tf *ast.Taskfile) {
 			task.Env[k] = parse.ExpandTemplates(v, tf.Vars)
 		}
 
+		// Pre-expand template references in precondition `sh:` commands so the
+		// shell sees the resolved value (e.g. `[ "darwin" = "darwin" ]`) rather
+		// than the literal `{{.OS}}` text. Without this, every host-OS
+		// precondition would fail because the unexpanded token never equals
+		// the target platform string.
+		for _, pc := range task.Precondition {
+			if pc != nil {
+				pc.Sh = parse.ExpandTemplates(pc.Sh, tf.Vars)
+			}
+		}
+
 		updates = append(updates, taskUpdate{oldName: taskName, newName: newName, task: task})
 	}
 

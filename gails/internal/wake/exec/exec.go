@@ -205,10 +205,6 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 		return nil
 	}
 
-	if err := checkPreconditions(task); err != nil {
-		return err
-	}
-
 	if !e.Force && isUpToDate(task, e.Dir) {
 		e.log("skipping task %q (up-to-date)", task.Name)
 		e.reportPrunedCached(task)
@@ -216,6 +212,13 @@ func (e *Executor) runTask(ctx context.Context, task *ast.Task, depVars map[stri
 	}
 
 	mergedVars := e.mergeVars(task, depVars)
+
+	// Check preconditions with the fully merged vars so precondition
+	// `sh:` commands can reference task-level / CLI vars in addition to the
+	// built-ins (OS, ARCH, …) that wake already expanded at parse time.
+	if err := checkPreconditions(task, mergedVars); err != nil {
+		return err
+	}
 
 	// depRuns is shared across goroutines once the parallel dep fanout is
 	// in flight, so take e.mu for both the lazy-init and every read/write.
