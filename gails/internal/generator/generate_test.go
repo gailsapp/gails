@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	pathpkg "path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -76,8 +77,13 @@ func TestGenerator(t *testing.T) {
 				return nil
 			}
 
-			// Record file.
-			test.want[filepath.Clean("."+path[len(test.outputDir):])] = false
+			// Record file. Normalize to forward slashes so the key
+			// matches the paths the generator emits (which always use
+			// '/' regardless of platform — they come from
+			// golang.org/x/tools/go/packages PkgPath values, not from
+			// the local filesystem).
+			rel := "." + filepath.ToSlash(path[len(test.outputDir):])
+			test.want[pathpkg.Clean(rel)] = false
 			return nil
 		})
 
@@ -176,54 +182,62 @@ func configString(options *flags.GenerateBindingsOptions) string {
 }
 
 // outputCreator returns a FileCreator that detects want/got pairs
-// and schedules them for comparison.
-//
-// If no corresponding want file exists, it is created and reported.
-func outputCreator(t *testing.T, params *testParams) config.FileCreator {
-	var mu sync.Mutex
-	return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
-		path = filepath.Clean(path)
-		prefixedPath := filepath.Join(params.outputDir, path)
+	// and schedules them for comparison.
+	//
+	// If no corresponding want file exists, it is created and reported.
+	func outputCreator(t *testing.T, params *testParams) config.FileCreator {
+		var mu sync.Mutex
+		return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
+			// Normalize the generator-supplied path to forward slashes
+			// before consulting the want map. The generator builds
+			// paths from golang.org/x/tools/go/packages PkgPath values,
+			// which are always '/' on every platform; filepath.Clean
+			// would rewrite them to '\' on Windows and the lookup
+			// would always miss. The prefixedPath (filesystem path)
+			// still uses filepath.Join so directory creation works
+			// on every platform.
+			key := pathpkg.Clean(filepath.ToSlash(path))
+			prefixedPath := filepath.Join(params.outputDir, path)
 
-		// Protect want map accesses.
-		mu.Lock()
-		defer mu.Unlock()
+			// Protect want map accesses.
+			mu.Lock()
+			defer mu.Unlock()
 
-		if seen, ok := params.want[path]; ok {
-			// File exists: mark as seen and compare.
-			if seen {
-				t.Errorf("Duplicate output file '%s'", path)
+			if seen, ok := params.want[key]; ok {
+				// File exists: mark as seen and compare.
+				if seen {
+					t.Errorf("Duplicate output file '%s'", path)
+				}
+				params.want[key] = true
+
+				// Open want file.
+				wf, err := os.Open(prefixedPath)
+				if err != nil {
+					return nil, err
+				}
+
+				// Create or truncate got file.
+				ext := filepath.Ext(prefixedPath)
+				gf, err := os.Create(fmt.Sprintf("%s.got%s", prefixedPath[:len(prefixedPath)-len(ext)], ext))
+				if err != nil {
+					return nil, err
+				}
+
+				// Initialise comparer.
+				return &outputComparer{t, key, wf, gf}, nil
+			} else {
+				// File does not exist: create it.
+				t.Errorf("Unexpected output file '%s'", path)
+				params.want[key] = true
+
+				if err := os.MkdirAll(filepath.Dir(prefixedPath), 0777); err != nil {
+					return nil, err
+				}
+
+				return os.Create(prefixedPath)
 			}
-			params.want[path] = true
-
-			// Open want file.
-			wf, err := os.Open(prefixedPath)
-			if err != nil {
-				return nil, err
-			}
-
-			// Create or truncate got file.
-			ext := filepath.Ext(prefixedPath)
-			gf, err := os.Create(fmt.Sprintf("%s.got%s", prefixedPath[:len(prefixedPath)-len(ext)], ext))
-			if err != nil {
-				return nil, err
-			}
-
-			// Initialise comparer.
-			return &outputComparer{t, path, wf, gf}, nil
-		} else {
-			// File does not exist: create it.
-			t.Errorf("Unexpected output file '%s'", path)
-			params.want[path] = true
-
-			if err := os.MkdirAll(filepath.Dir(prefixedPath), 0777); err != nil {
-				return nil, err
-			}
-
-			return os.Create(prefixedPath)
-		}
-	})
-}
+		})
+	}
 
 // outputComparer is a io.WriteCloser that writes to got.
 //
