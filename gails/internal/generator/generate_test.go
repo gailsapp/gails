@@ -204,12 +204,16 @@ func configString(options *flags.GenerateBindingsOptions) string {
 			// still uses filepath.Join so directory creation works
 			// on every platform.
 			key := pathpkg.Clean(filepath.ToSlash(path))
-			fmt.Fprintf(os.Stderr, "[DEBUG-KEY] key=%q hasInWant=%v\n", key, params.want[key])
 			prefixedPath := filepath.Join(params.outputDir, path)
 
-			// Protect want map accesses.
+			// Protect want map accesses. The want map is read and
+			// written by every concurrent invocation of this creator
+			// (the generator schedules one goroutine per service
+			// package), so all access must be serialized.
 			mu.Lock()
 			defer mu.Unlock()
+
+			fmt.Fprintf(os.Stderr, "[DEBUG-KEY] key=%q hasInWant=%v\n", key, params.want[key])
 
 			if seen, ok := params.want[key]; ok {
 				// File exists: mark as seen and compare.

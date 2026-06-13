@@ -54,6 +54,7 @@ type HTTPTransport struct {
 	logger           *slog.Logger
 	chunkStore       sync.Map
 	stopCleanup      chan struct{}
+	stopOnce         sync.Once
 }
 
 func NewHTTPTransport(opts ...HTTPTransportOption) *HTTPTransport {
@@ -114,10 +115,15 @@ func (t *HTTPTransport) JSClient() []byte {
 }
 
 func (t *HTTPTransport) Stop() error {
-	if t.stopCleanup != nil {
-		close(t.stopCleanup)
-		t.stopCleanup = nil
-	}
+	// Use sync.Once so close() runs at most once even if Stop is called
+	// repeatedly. Do not nil out t.stopCleanup: the cleanup goroutine
+	// reads the field on every select iteration, and writing nil from
+	// Stop would race with that read under -race.
+	t.stopOnce.Do(func() {
+		if t.stopCleanup != nil {
+			close(t.stopCleanup)
+		}
+	})
 	return nil
 }
 
