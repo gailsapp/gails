@@ -343,11 +343,17 @@ jobs:
           echo "Initializing template: ${{ matrix.template }}"
           gails init -n "$PROJECT_NAME" -t "${{ matrix.template }}"
           
-          cd "$PROJECT_NAME/frontend"
+          # `gails init` chdir's its own child process to the newly created
+          # project directory ($PROJECT_NAME/$PROJECT_NAME), but that has no
+          # effect on this shell's cwd. Re-align explicitly so subsequent
+          # commands run from the project root.
+          cd "$PROJECT_NAME"
+          
+          cd frontend
           echo "Replacing runtime dependency with local tarball"
           npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
           
-          cd ../..
+          cd ..
           echo "Building project..."
           gails build
           
@@ -365,9 +371,12 @@ jobs:
           cd "$PROJECT_NAME"
           
           gails init -n "$PROJECT_NAME" -t "${{ matrix.template }}"
-          cd "$PROJECT_NAME/frontend"
+          # See the matching comment in the main build step above: the init
+          # child's chdir doesn't propagate to this shell.
+          cd "$PROJECT_NAME"
+          cd frontend
           npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
-          cd ../..
+          cd ..
           
           BUILD_TAGS=gtk3 gails build
           echo "✅ GTK3 legacy build successful for ${{ matrix.template }}"
