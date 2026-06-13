@@ -255,7 +255,6 @@ jobs:
     strategy:
       fail-fast: true
       max-parallel: 6
-      node-version: [24.x]
       matrix:
         os: [ubuntu-latest]
         template:
