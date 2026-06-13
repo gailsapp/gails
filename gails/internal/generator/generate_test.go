@@ -72,6 +72,8 @@ func TestGenerator(t *testing.T) {
 				return nil
 			}
 
+			fmt.Fprintf(os.Stderr, "[DEBUG-WALK] file=%q\n", path)
+
 			// Skip got files.
 			if strings.HasSuffix(d.Name(), ".got.js") || strings.HasSuffix(d.Name(), ".got.ts") || strings.HasSuffix(d.Name(), ".got.log") {
 				return nil
@@ -83,7 +85,11 @@ func TestGenerator(t *testing.T) {
 			// golang.org/x/tools/go/packages PkgPath values, not from
 			// the local filesystem).
 			rel := "." + filepath.ToSlash(path[len(test.outputDir):])
-			test.want[pathpkg.Clean(rel)] = false
+			key := pathpkg.Clean(rel)
+			if filepath.Base(path) == "eventdata.d.ts" {
+				fmt.Fprintf(os.Stderr, "[DEBUG-EVENTDATA] walkfile=%q key=%q\n", path, key)
+			}
+			test.want[key] = false
 			return nil
 		})
 
@@ -188,6 +194,7 @@ func configString(options *flags.GenerateBindingsOptions) string {
 	func outputCreator(t *testing.T, params *testParams) config.FileCreator {
 		var mu sync.Mutex
 		return config.FileCreatorFunc(func(path string) (io.WriteCloser, error) {
+			fmt.Fprintf(os.Stderr, "[DEBUG-CREATE] raw=%q\n", path)
 			// Normalize the generator-supplied path to forward slashes
 			// before consulting the want map. The generator builds
 			// paths from golang.org/x/tools/go/packages PkgPath values,
@@ -197,6 +204,7 @@ func configString(options *flags.GenerateBindingsOptions) string {
 			// still uses filepath.Join so directory creation works
 			// on every platform.
 			key := pathpkg.Clean(filepath.ToSlash(path))
+			fmt.Fprintf(os.Stderr, "[DEBUG-KEY] key=%q hasInWant=%v\n", key, params.want[key])
 			prefixedPath := filepath.Join(params.outputDir, path)
 
 			// Protect want map accesses.
