@@ -27,6 +27,7 @@ type View struct {
 // slots followed by 58 methods in upstream order, matching
 // iCoreWebView2Vtbl in
 // github.com/wailsapp/wails/webview2/pkg/edge/corewebview2.go.
+// In the Gails fork this vtable lives at gails/pkg/webview2/view.go.
 //
 //	[0]   QueryInterface
 //	[1]   AddRef

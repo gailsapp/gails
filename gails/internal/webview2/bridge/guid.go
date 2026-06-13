@@ -4,7 +4,8 @@
 // github.com/wailsapp/wails/webview2/pkg/edge/guid.go (the parser
 // and Stringer; the upstream file was adapted from
 // https://github.com/go-ole/go-ole and retains its MIT license
-// notice).
+// notice). In the Gails fork this file lives at
+// gails/internal/webview2/bridge/guid.go.
 //
 // Upstream divergence: upstream exposes `NewGUID(string) *GUID` that
 // returns nil on parse failure. The Gails port exposes

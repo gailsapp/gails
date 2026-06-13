@@ -41,7 +41,8 @@ type NavigationCompletedEventArgs struct {
 // WebErrorStatus, and NavigationId. The error status returned by
 // GetWebErrorStatus is a COREWEBVIEW2_WEB_ERROR_STATUS enum value
 // (uint32), not an HRESULT — if the navigation failed, IsSuccess
-// is FALSE and WebErrorStatus describes why.
+// is FALSE and WebErrorStatus describes why. In the Gails fork the
+// vtable type lives at gails/pkg/webview2/events_navigation.go.
 type iCoreWebView2NavigationCompletedEventArgsVtable struct {
 	QueryInterface    uintptr
 	AddRef            uintptr

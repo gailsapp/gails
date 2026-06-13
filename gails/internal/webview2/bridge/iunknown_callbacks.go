@@ -12,6 +12,8 @@
 //
 // The bodies mirror upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge/iunknown.go.
+// In the Gails fork the C-side trampolines live in
+// gails/internal/webview2/bridge/iunknown_callbacks.go.
 
 package bridge
 

@@ -2,6 +2,8 @@
 
 // Port of upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge/iunknown_impl.go.
+// In the Gails fork this file lives at
+// gails/internal/webview2/bridge/iunknown_impl.go.
 //
 // The upstream file defines:
 //   - IUnknownFromPointer / IUnknownFromUintptr cast helpers

@@ -3,7 +3,8 @@
 // Package webview2 loader: version comparison, runtime detection, and
 // the GetFileVersionInfo syscall helpers used to read the WebView2
 // runtime's product version. Ported from
-// github.com/wailsapp/wails/webview2/webviewloader.
+// github.com/wailsapp/wails/webview2/webviewloader. In the Gails fork
+// the loader lives at gails/pkg/webview2/loader_windows.go.
 package webview2
 
 import (
@@ -25,7 +26,7 @@ import (
 // UsingGoWebview2Loader is set to true when the in-tree go webview2
 // loader is used (always true after the gails rewrite; the boolean is
 // preserved for compatibility with code that branched on it during the
-// wailsapp→gailsapp transition).
+// wailsapp→gailsapp org transition).
 var UsingGoWebview2Loader = true
 
 // CompareBrowserVersions will compare the 2 given versions and return:

@@ -2,6 +2,8 @@
 
 // Port of upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge/vtables.go.
+// In the Gails fork this file lives at
+// gails/internal/webview2/bridge/vtable.go.
 //
 // The Gails port preserves the Gails-friendly VTable struct (with
 // a Slots []uintptr field) as a slot-order-preserving packer for

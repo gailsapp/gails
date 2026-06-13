@@ -3,7 +3,8 @@
 // Port of upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge/bridge.go (and
 // the C-side QueryInterface / AddRef / Release trampolines from
-// iunknown.go).
+// iunknown.go). In the Gails fork this file lives at
+// gails/internal/webview2/bridge/comobject.go.
 //
 // This file adds the GENERIC ComObject / New / Resolve /
 // RegisterVTable machinery that pkg/w32 needs. It coexists with

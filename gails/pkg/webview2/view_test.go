@@ -12,6 +12,8 @@ func TestView_Construction(t *testing.T) {
 	// is declared so the vtable pointer arithmetic lines up with
 	// upstream's iCoreWebView2Vtbl in
 	// github.com/wailsapp/wails/webview2/pkg/edge/corewebview2.go.
+	// In the Gails fork the vtable lives at
+	// gails/pkg/webview2/view.go.
 	v := &View{Raw: 0x9999}
 	if v.Raw != 0x9999 {
 		t.Errorf("Raw = 0x%x", v.Raw)

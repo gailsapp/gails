@@ -26,6 +26,8 @@ type Environment struct {
 // vtable. 3 IUnknown slots followed by 5 environment methods in
 // upstream order, matching iCoreWebView2EnvironmentVtbl in
 // github.com/wailsapp/wails/webview2/pkg/edge/corewebview2.go.
+// In the Gails fork this vtable lives at
+// gails/pkg/webview2/environment.go.
 //
 //	[0]  QueryInterface
 //	[1]  AddRef

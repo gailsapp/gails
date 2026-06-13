@@ -2,7 +2,8 @@
 
 // Package w32helper is a thin port of upstream
 // github.com/wailsapp/wails/webview2/internal/w32, providing a single
-// syscall.Proc wrapper for Ole32CoInitializeEx.
+// syscall.Proc wrapper for Ole32CoInitializeEx. In the Gails fork this
+// package lives at gails/internal/webview2/w32helper.
 package w32helper
 
 import "syscall"

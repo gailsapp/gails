@@ -2,6 +2,8 @@
 
 // Port of upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge/syscall.go.
+// In the Gails fork this file lives at
+// gails/internal/webview2/bridge/syscall.go.
 //
 // Upstream divergence: the upstream file wraps kernel32's
 // `GlobalAlloc` / `GlobalFree` and exposes `allocUintptrObject`,

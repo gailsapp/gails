@@ -13,7 +13,8 @@ import (
 //
 // The struct shape mirrors upstream edge.Chromium
 // (github.com/wailsapp/wails/webview2/pkg/edge/chromium.go) field-for-field
-// per the Porting Protocol. The Gails port only wires a subset of the
+// per the Porting Protocol. In the Gails fork the upstream edge.Chromium
+// is replaced by gails/pkg/webview2/Controller. The Gails port only wires a subset of the
 // handlers today (MessageReceived, WebResourceRequested,
 // NavigationCompleted, ContainsFullScreenElementChanged); the remaining
 // handler fields (PermissionRequested, ProcessFailed,

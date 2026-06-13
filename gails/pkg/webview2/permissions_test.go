@@ -6,7 +6,8 @@ import "testing"
 
 func TestPermissionState_Constants(t *testing.T) {
 	// Values must match upstream github.com/wailsapp/wails/webview2/pkg/edge
-	// CoreWebView2PermissionState enum (Default=0, Allow=1, Deny=2).
+	// CoreWebView2PermissionState enum (Default=0, Allow=1, Deny=2). In the
+	// Gails fork the ported enum lives at gails/pkg/webview2/permissions.go.
 	cases := []struct {
 		got, want PermissionState
 	}{

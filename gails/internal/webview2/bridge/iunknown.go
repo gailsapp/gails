@@ -3,7 +3,8 @@
 // Package bridge is a port of upstream
 // github.com/wailsapp/wails/webview2/pkg/combridge. It exposes the raw
 // COM bridge primitives (IUnknown, vtable dispatch, syscall helpers) used
-// by pkg/w32 and the higher-level webview2 package.
+// by pkg/w32 and the higher-level webview2 package. In the Gails fork
+// the package lives at gails/internal/webview2/bridge.
 package bridge
 
 import (
