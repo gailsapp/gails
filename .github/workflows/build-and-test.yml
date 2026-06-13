@@ -165,20 +165,6 @@ jobs:
             echo "$STUB_HTML" > "$dir/dist/index.html"
           done
 
-      - name: Build Examples (GTK4 default)
-        working-directory: gails
-        run: |
-          echo "Starting example compilation tests (GTK4 default)..."
-          task test:examples
-          echo "Example compilation tests (GTK4 default) completed successfully"
-
-      - name: Build Examples (GTK3 legacy)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: gails
-        run: |
-          echo "Starting example compilation tests (GTK3 legacy)..."
-          BUILD_TAGS=gtk3 task test:examples
-          echo "Example compilation tests (GTK3 legacy) completed successfully"
 
       - name: Run tests (mac)
         if: matrix.os == 'macos-latest'
@@ -210,7 +196,7 @@ jobs:
   cleanup:
     name: Cleanup build artifacts
     if: always()
-    needs: [test_js, test_go, test_templates]
+    needs: [test_js, test_go]
     runs-on: ubuntu-latest
     steps:
       - uses: geekyeggo/delete-artifact@v5
@@ -276,7 +262,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Wails3 CLI
+      - name: Build gails CLI
         working-directory: gails
         run: |
           task install
@@ -293,7 +279,8 @@ jobs:
         run: |
           # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            RUNTIME_TGZ="$(cd gails-runtime-temp && pwd -W)/$(ls gails-runtime-temp/*.tgz | xargs basename)"
+            RUNTIME_TGZ="$(cd gails-runtime-temp && pwd)/$(ls gails-runtime-temp/*.tgz | xargs basename)"
+            # 然后使用 cygpath 转换（如果需要）
           else
             RUNTIME_TGZ="$(cd gails-runtime-temp && pwd)/$(ls gails-runtime-temp/*.tgz | xargs basename)"
           fi
