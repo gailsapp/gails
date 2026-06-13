@@ -16,7 +16,8 @@ var (
 	// 1. Extension-based lookup is O(1) vs O(n) content scanning
 	// 2. Web assets typically have correct extensions
 	// 3. stdlib's http.DetectContentType handles remaining cases adequately
-	// 4. Saves ~208KB binary size by not using github.com/wailsapp/mimetype
+	// 4. Replaces the third-party wailsapp/mimetype content-sniffer, saving
+	//    ~208KB of binary size (no content-based detection dependency).
 	mimeTypesByExt = map[string]string{
 		// HTML
 		".htm":  "text/html; charset=utf-8",

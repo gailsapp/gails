@@ -8,8 +8,9 @@ import (
 )
 
 // TestMimeTypeDetection_WebFormats validates that extension-based detection
-// plus stdlib fallback correctly handles all common web asset formats.
-// This test ensures we can safely remove the github.com/wailsapp/mimetype dependency.
+// plus stdlib fallback correctly handles all common web asset formats. This
+// regression guard replaces the third-party wailsapp/mimetype content sniffer
+// with the stdlib DetectContentType fallback for ambiguous cases.
 func TestMimeTypeDetection_WebFormats(t *testing.T) {
 	// webMimeTests covers all common web formats that Wails applications typically serve
 	webMimeTests := []struct {
