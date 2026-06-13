@@ -58,7 +58,7 @@ dev_mode:
       type: primary
 
 # File Associations
-# More information at: https://v3.gails.io/noit/done/yet
+# More information at: https://gails.smileyan.cn/noit/done/yet
 fileAssociations:
 #  - ext: gails
 #    name: Wails

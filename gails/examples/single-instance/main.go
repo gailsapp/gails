@@ -35,7 +35,7 @@ func main() {
 	app := application.New(application.Options{
 		Name:        "Single Instance Example",
 		LogLevel:    slog.LevelDebug,
-		Description: "An example of single instance functionality in Wails v3",
+		Description: "An example of single instance functionality in Gails",
 		Services: []application.Service{
 			application.NewService(&App{}),
 		},

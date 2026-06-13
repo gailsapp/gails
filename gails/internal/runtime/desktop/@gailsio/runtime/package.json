@@ -17,11 +17,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gailsapp/gails.git",
-    "directory": "v3/internal/runtime/desktop/@gailsio/runtime"
+    "directory": "internal/runtime/desktop/@gailsio/runtime"
   },
-  "author": "The Wails Team",
+  "author": "The Gails Team",
   "license": "MIT",
-  "homepage": "https://v3.gails.io",
+  "homepage": "https://gails.smileyan.cn",
   "bugs": {
     "url": "https://github.com/gailsapp/gails/issues"
   },

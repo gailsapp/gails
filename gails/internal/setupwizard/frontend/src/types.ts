@@ -10,17 +10,6 @@ export interface DependencyStatus {
   helpUrl?: string;
 }
 
-export interface DockerStatus {
-  installed: boolean;
-  running: boolean;
-  version?: string;
-  imageBuilt: boolean;
-  imageName: string;
-  pullProgress: number;
-  pullStatus: 'idle' | 'pulling' | 'complete' | 'error';
-  pullError?: string;
-}
-
 export interface UserConfig {
   developerName: string;
   email: string;
@@ -56,13 +45,12 @@ export interface SystemInfo {
 export interface WizardState {
   currentStep: number;
   dependencies: DependencyStatus[];
-  docker: DockerStatus;
   config: UserConfig;
   system: SystemInfo;
   startTime: string;
 }
 
-export type Step = 'splash' | 'welcome' | 'dependencies' | 'docker' | 'defaults' | 'config' | 'gails-config' | 'complete';
+export type Step = 'splash' | 'welcome' | 'dependencies' | 'defaults' | 'config' | 'gails-config' | 'complete';
 
 export interface AuthorDefaults {
   name: string;

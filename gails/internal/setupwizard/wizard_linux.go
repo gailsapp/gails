@@ -50,9 +50,6 @@ func (w *Wizard) checkAllDependencies() []DependencyStatus {
 		deps = append(deps, checkNpm())
 	}
 
-	// Check Docker (optional)
-	deps = append(deps, checkDocker())
-
 	return deps
 }
 
@@ -89,51 +86,5 @@ func checkNpm() DependencyStatus {
 
 	dep.Installed = true
 	dep.Status = "installed"
-	return dep
-}
-
-func checkDocker() DependencyStatus {
-	dep := DependencyStatus{
-		Name:     "docker",
-		Required: false, // Optional for cross-compilation
-	}
-
-	version, err := execCommand("docker", "--version")
-	if err != nil {
-		dep.Status = "not_installed"
-		dep.Installed = false
-		dep.Message = "Enables cross-platform builds"
-		dep.HelpURL = "https://docs.docker.com/get-docker/"
-		dep.InstallCommand = "Install Docker from https://docs.docker.com/get-docker/"
-		return dep
-	}
-
-	// Parse version from "Docker version 24.0.7, build afdd53b"
-	parts := strings.Split(version, ",")
-	if len(parts) > 0 {
-		dep.Version = strings.TrimPrefix(strings.TrimSpace(parts[0]), "Docker version ")
-	}
-
-	// Check if daemon is running
-	_, err = execCommand("docker", "info")
-	if err != nil {
-		dep.Installed = true
-		dep.Status = "installed"
-		dep.Message = "Start Docker to enable cross-compilation"
-		return dep
-	}
-
-	// Check for gails-cross image
-	imageCheck, _ := execCommand("docker", "image", "inspect", "gails-cross")
-	if imageCheck == "" || strings.Contains(imageCheck, "Error") {
-		dep.Installed = true
-		dep.Status = "installed"
-		dep.Message = "Run 'gails task setup:docker' to build cross-compilation image"
-	} else {
-		dep.Installed = true
-		dep.Status = "installed"
-		dep.Message = "Cross-compilation ready"
-	}
-
 	return dep
 }

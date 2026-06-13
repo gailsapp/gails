@@ -186,9 +186,9 @@ type Template struct {
 
 // parseTemplate loads and validates a template's metadata.
 //
-// It first looks for template.yaml (the v3 native format). If found, gailsVersion
+// It first looks for template.yaml (the Gails native format). If found, gailsVersion
 // must be present and equal to 3. If only template.json exists (legacy format),
-// schema must be 3 for a v3 template; schema 0 means the template is for Wails v2.
+// schema must be 3 for a Gails template; schema 0 means the template is for a previous Wails generation.
 func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	var result Template
 
@@ -197,7 +197,7 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 		prefix = templateName + "/"
 	}
 
-	// --- YAML path: preferred v3 format ---
+	// --- YAML path: preferred Gails format ---
 	yamlData, yamlErr := fs.ReadFile(templateFS, prefix+"template.yaml")
 	if yamlErr == nil {
 		if err := yaml.Unmarshal(yamlData, &result); err != nil {
@@ -231,10 +231,10 @@ func parseTemplate(templateFS fs.FS, templateName string) (Template, error) {
 	result.FS = templateFS
 
 	if result.Schema == 0 {
-		return result, fmt.Errorf("template not supported by Wails v3: no schema or gailsVersion found. This template is probably for Wails v2")
+		return result, fmt.Errorf("template not supported by Gails: no schema or gailsVersion found. This template is probably for a previous Wails generation")
 	}
 	if result.Schema != 3 {
-		return result, fmt.Errorf("template schema %d is not supported by Wails v3. Ensure 'schema' is set to 3 in template.json", result.Schema)
+		return result, fmt.Errorf("template schema %d is not supported by Gails. Ensure 'schema' is set to 3 in template.json", result.Schema)
 	}
 
 	return result, nil
@@ -558,7 +558,7 @@ func GenerateTemplate(options *BaseTemplate) error {
 	if err != nil {
 		return err
 	}
-	const modeline = "# yaml-language-server: $schema=https://v3.gails.io/schemas/template.v3.json\n"
+	const modeline = "# yaml-language-server: $schema=https://gails.smileyan.cn/schemas/template.v3.json\n"
 	if err = os.WriteFile(filepath.Join(outDir, "template.yaml"), append([]byte(modeline), optionsYAML...), 0644); err != nil {
 		return err
 	}

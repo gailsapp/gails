@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://v3.gails.io/schemas/template.v3.json
+# yaml-language-server: $schema=https://gails.smileyan.cn/schemas/template.v3.json
 name: "Qwik + Vite"
 shortname: qwik
 author: Lea Anthony

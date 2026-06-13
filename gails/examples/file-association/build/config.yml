@@ -14,7 +14,7 @@ info:
   version: "v0.0.1" # The application version
 
 # File Associations
-# More information at: https://v3.gails.io/noit/done/yet
+# More information at: https://gails.smileyan.cn/noit/done/yet
 fileAssociations:
   - ext: gails
     name: Wails

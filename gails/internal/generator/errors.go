@@ -13,21 +13,21 @@ import (
 // ErrNoContextPackage indicates that
 // the canonical path for the standard context package
 // did not match any actual package.
-var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context'): is the Wails v3 module properly installed? ")
+var ErrNoContextPackage = errors.New("standard context package not found at canonical import path ('context'): is the Gails module properly installed? ")
 
 // ErrNoApplicationPackage indicates that
 // the canonical path for the Wails application package
 // did not match any actual package.
-var ErrNoApplicationPackage = errors.New("Wails application package not found at canonical import path ('" + config.GailsAppPkgPath + "'): is the Wails v3 module properly installed? ")
+var ErrNoApplicationPackage = errors.New("Wails application package not found at canonical import path ('" + config.GailsAppPkgPath + "'): is the Gails module properly installed? ")
 
 // ErrNoInternalPackage indicates that
 // the canonical path for the Wails internal package
 // did not match any actual package.
-var ErrNoInternalPackage = errors.New("Wails internal package not found at canonical import path ('" + config.GailsInternalPkgPath + "'): is the Wails v3 module properly installed? ")
+var ErrNoInternalPackage = errors.New("Wails internal package not found at canonical import path ('" + config.GailsInternalPkgPath + "'): is the Gails module properly installed? ")
 
 // ErrBadApplicationPackage indicates that
 // the Wails application package has invalid content.
-var ErrBadApplicationPackage = errors.New("package " + config.GailsAppPkgPath + ": function NewService has wrong signature: is the Wails v3 module properly installed? ")
+var ErrBadApplicationPackage = errors.New("package " + config.GailsAppPkgPath + ": function NewService has wrong signature: is the Gails module properly installed? ")
 
 // ErrNoPackages is returned by [Generator.Generate]
 // when [LoadPackages] returns no error and no packages.

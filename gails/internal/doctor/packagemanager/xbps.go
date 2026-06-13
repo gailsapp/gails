@@ -38,9 +38,6 @@ func (x *Xbps) Packages() Packagemap {
 		"npm": []*Package{
 			{Name: "nodejs", SystemPackage: true},
 		},
-		"docker": []*Package{
-			{Name: "docker", SystemPackage: true, Optional: true},
-		},
 		"upx": []*Package{
 			{Name: "upx", SystemPackage: true, Optional: true},
 		},

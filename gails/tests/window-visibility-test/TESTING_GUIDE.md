@@ -146,7 +146,7 @@ Notes:
 ### **Common Issues**
 - **Blank window**: Check activity log for error messages
 - **Slow timing**: Verify system isn't under heavy load
-- **Build failures**: Ensure Gails v3 CLI is latest version
+- **Build failures**: Ensure Gails CLI is latest version
 - **Import errors**: Run `go mod tidy` in example directory
 
 ### **Debug Information**

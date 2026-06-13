@@ -37,18 +37,6 @@ type DependencyStatus struct {
 	HelpURL        string `json:"helpUrl,omitempty"`
 }
 
-// DockerStatus represents Docker installation and image status
-type DockerStatus struct {
-	Installed    bool   `json:"installed"`
-	Running      bool   `json:"running"`
-	Version      string `json:"version,omitempty"`
-	ImageBuilt   bool   `json:"imageBuilt"`
-	ImageName    string `json:"imageName"`
-	PullProgress int    `json:"pullProgress"`
-	PullStatus   string `json:"pullStatus"` // "idle", "pulling", "complete", "error"
-	PullError    string `json:"pullError,omitempty"`
-}
-
 // WailsConfigInfo represents the info section of gails.yaml
 type WailsConfigInfo struct {
 	CompanyName       string `json:"companyName" yaml:"companyName"`
@@ -85,13 +73,11 @@ type WizardState struct {
 
 // Wizard is the setup wizard server
 type Wizard struct {
-	server       *http.Server
-	state        WizardState
-	stateMu      sync.RWMutex
-	dockerStatus DockerStatus
-	dockerMu     sync.RWMutex
-	done         chan struct{}
-	shutdown     chan struct{}
+	server   *http.Server
+	state    WizardState
+	stateMu  sync.RWMutex
+	done     chan struct{}
+	shutdown chan struct{}
 }
 
 // New creates a new setup wizard
@@ -160,9 +146,6 @@ func (w *Wizard) setupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/state", w.handleState)
 	mux.HandleFunc("/api/dependencies/check", w.handleCheckDependencies)
 	mux.HandleFunc("/api/dependencies/install", w.handleInstallDependency)
-	mux.HandleFunc("/api/docker/status", w.handleDockerStatus)
-	mux.HandleFunc("/api/docker/build", w.handleDockerBuild)
-	mux.HandleFunc("/api/docker/start-background", w.handleDockerStartBackground)
 	mux.HandleFunc("/api/gails-config", w.handleWailsConfig)
 	mux.HandleFunc("/api/defaults", w.handleDefaults)
 	mux.HandleFunc("/api/complete", w.handleComplete)
@@ -346,190 +329,6 @@ func execCommand(name string, args ...string) (string, error) {
 func commandExists(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
-}
-
-func (w *Wizard) handleDockerStatus(rw http.ResponseWriter, r *http.Request) {
-	status := w.checkDocker()
-
-	w.dockerMu.Lock()
-	w.dockerStatus = status
-	w.dockerMu.Unlock()
-
-	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(status)
-}
-
-func (w *Wizard) checkDocker() DockerStatus {
-	status := DockerStatus{
-		ImageName:  "gails-cross",
-		PullStatus: "idle",
-	}
-
-	// Check if Docker is installed
-	output, err := execCommand("docker", "--version")
-	if err != nil {
-		status.Installed = false
-		return status
-	}
-
-	status.Installed = true
-	// Parse version from "Docker version 24.0.7, build afdd53b"
-	parts := strings.Split(output, ",")
-	if len(parts) > 0 {
-		status.Version = strings.TrimPrefix(strings.TrimSpace(parts[0]), "Docker version ")
-	}
-
-	// Check if Docker daemon is running
-	if _, err := execCommand("docker", "info"); err != nil {
-		status.Running = false
-		return status
-	}
-	status.Running = true
-
-	// Check if gails-cross image exists
-	imageOutput, err := execCommand("docker", "image", "inspect", "gails-cross")
-	status.ImageBuilt = err == nil && len(imageOutput) > 0
-
-	return status
-}
-
-func (w *Wizard) handleDockerBuild(rw http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(rw, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.dockerMu.Lock()
-	w.dockerStatus.PullStatus = "pulling"
-	w.dockerStatus.PullProgress = 0
-	w.dockerMu.Unlock()
-
-	// Build the Docker image in background
-	go func() {
-		// Run: gails task setup:docker
-		cmd := exec.Command("gails", "task", "setup:docker")
-		err := cmd.Run()
-
-		w.dockerMu.Lock()
-		if err != nil {
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
-		} else {
-			w.dockerStatus.PullStatus = "complete"
-			w.dockerStatus.ImageBuilt = true
-		}
-		w.dockerStatus.PullProgress = 100
-		w.dockerMu.Unlock()
-	}()
-
-	// Simulate progress updates while building
-	go func() {
-		for i := 0; i < 90; i += 5 {
-			time.Sleep(2 * time.Second)
-			w.dockerMu.Lock()
-			if w.dockerStatus.PullStatus != "pulling" {
-				w.dockerMu.Unlock()
-				return
-			}
-			w.dockerStatus.PullProgress = i
-			w.dockerMu.Unlock()
-		}
-	}()
-
-	rw.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(map[string]string{"status": "started"})
-}
-
-// handleDockerStartBackground checks if Docker is available and starts building in background
-// This is called early in the wizard flow to get a head start on the image build
-func (w *Wizard) handleDockerStartBackground(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Content-Type", "application/json")
-
-	// Check Docker status first
-	status := w.checkDocker()
-
-	w.dockerMu.Lock()
-	w.dockerStatus = status
-	w.dockerMu.Unlock()
-
-	// Only start build if Docker is installed, running, and image not built yet
-	if !status.Installed || !status.Running || status.ImageBuilt {
-		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"started": false,
-			"reason":  getDockerNotStartedReason(status),
-			"status":  status,
-		})
-		return
-	}
-
-	// Check if already building
-	w.dockerMu.RLock()
-	alreadyBuilding := w.dockerStatus.PullStatus == "pulling"
-	w.dockerMu.RUnlock()
-
-	if alreadyBuilding {
-		json.NewEncoder(rw).Encode(map[string]interface{}{
-			"started": false,
-			"reason":  "already_building",
-			"status":  status,
-		})
-		return
-	}
-
-	// Start building in background
-	w.dockerMu.Lock()
-	w.dockerStatus.PullStatus = "pulling"
-	w.dockerStatus.PullProgress = 0
-	w.dockerMu.Unlock()
-
-	// Build the Docker image in background
-	go func() {
-		cmd := exec.Command("gails", "task", "setup:docker")
-		err := cmd.Run()
-
-		w.dockerMu.Lock()
-		if err != nil {
-			w.dockerStatus.PullStatus = "error"
-			w.dockerStatus.PullError = err.Error()
-		} else {
-			w.dockerStatus.PullStatus = "complete"
-			w.dockerStatus.ImageBuilt = true
-		}
-		w.dockerStatus.PullProgress = 100
-		w.dockerMu.Unlock()
-	}()
-
-	// Simulate progress updates while building
-	go func() {
-		for i := 0; i < 90; i += 5 {
-			time.Sleep(2 * time.Second)
-			w.dockerMu.Lock()
-			if w.dockerStatus.PullStatus != "pulling" {
-				w.dockerMu.Unlock()
-				return
-			}
-			w.dockerStatus.PullProgress = i
-			w.dockerMu.Unlock()
-		}
-	}()
-
-	json.NewEncoder(rw).Encode(map[string]interface{}{
-		"started": true,
-		"status":  status,
-	})
-}
-
-func getDockerNotStartedReason(status DockerStatus) string {
-	if !status.Installed {
-		return "not_installed"
-	}
-	if !status.Running {
-		return "not_running"
-	}
-	if status.ImageBuilt {
-		return "already_built"
-	}
-	return "unknown"
 }
 
 // InstallRequest represents a request to install a dependency

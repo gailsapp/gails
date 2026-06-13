@@ -98,7 +98,6 @@ func main() {
 	tool.NewSubCommandFunction("version", "Bump semantic version", commands.ToolVersion)
 	tool.NewSubCommandFunction("lipo", "Create macOS universal binary from multiple architectures", commands.ToolLipo)
 	tool.NewSubCommandFunction("capabilities", "Check system build capabilities (GTK4/GTK3 availability)", commands.ToolCapabilities)
-	tool.NewSubCommandFunction("docker-mounts", "Generate Docker volume mount flags for cross-compilation", commands.ToolDockerMounts)
 	tool.NewSubCommandFunction("has-cc", "Check if a C compiler (gcc or clang) is available in PATH", commands.ToolHasCC)
 
 	// Low-level sign tool (used by Taskfiles)
@@ -156,7 +155,7 @@ func main() {
 
 func printFooter() {
 	if !commands.DisableFooter {
-		docsLink := term.Hyperlink("https://v3.gails.io/getting-started/your-first-app/", "gails docs")
+		docsLink := term.Hyperlink("https://gails.smileyan.cn/getting-started/your-first-app/", "gails docs")
 
 		pterm.Println(pterm.LightGreen("\nNeed documentation? Run: ") + pterm.LightBlue(docsLink))
 		// Check if we're in a teminal
@@ -175,7 +174,7 @@ func printFooter() {
 
 func openDocs() error {
 	commands.DisableFooter = true
-	return browser.OpenURL("https://v3.gails.io/getting-started/your-first-app/")
+	return browser.OpenURL("https://gails.smileyan.cn/getting-started/your-first-app/")
 }
 
 func openSponsor() error {

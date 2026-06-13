@@ -117,6 +117,6 @@ As a template author you are responsible for:
 
 ## Further Reading
 
-- [Creating Custom Templates](https://v3.gails.io/guides/advanced/custom-templates)
-- [Template Schema](https://v3.gails.io/reference/template-json)
-- [Gails Init Reference](https://v3.gails.io/reference/cli#init)
+- [Creating Custom Templates](https://gails.smileyan.cn/guides/advanced/custom-templates)
+- [Template Schema](https://gails.smileyan.cn/reference/template-json)
+- [Gails Init Reference](https://gails.smileyan.cn/reference/cli#init)

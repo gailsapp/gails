@@ -1,6 +1,6 @@
 # iOS Runtime Feature Plan
 
-This document outlines proposed iOS-only runtime features for Gails v3, the initial milestones, and method shapes exposed to the frontend runtime as `IOS.*`.
+This document outlines proposed iOS-only runtime features for Gails, the initial milestones, and method shapes exposed to the frontend runtime as `IOS.*`.
 
 ## Goals
 - Provide a first-class iOS runtime namespace: `IOS`.

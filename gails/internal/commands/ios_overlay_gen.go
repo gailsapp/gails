@@ -44,7 +44,7 @@ func IOSOverlayGen(options *IOSOverlayGenOptions) error { // options currently u
 	if err != nil {
 		return err
 	}
-	tmplPath := filepath.Join(root, "v3", "internal", "commands", "build_assets", "ios", "main_ios.go")
+	tmplPath := filepath.Join(root, "internal", "commands", "build_assets", "ios", "main_ios.go")
 	content, err := os.ReadFile(tmplPath)
 	if err != nil {
 		return fmt.Errorf("read template %s: %w", tmplPath, err)
@@ -105,9 +105,9 @@ func repoRoot() (string, error) {
 // split out from repoRoot so tests can drive it with a fixture directory
 // without touching the real cwd.
 func repoRootFrom(probe string) (string, error) {
-	// Walk up until we find a directory containing v3/internal/commands
+	// Walk up until we find a directory containing internal/commands
 	for i := 0; i < 10; i++ {
-		p := filepath.Join(probe, "v3", "internal", "commands")
+		p := filepath.Join(probe, "internal", "commands")
 		if st, err := os.Stat(p); err == nil && st.IsDir() {
 			return probe, nil
 		}

@@ -285,7 +285,7 @@ func main() {
 			Height: 400,
 			X:      400,
 			Y:      300,
-			HTML:   "<html><head><title>About</title><style>body{font-family:Arial,sans-serif;padding:20px;background:#f0f0f0;color:#333;text-align:center;}</style></head><body><h1>Window Visibility Test</h1><p>This application tests the fixes for Gails v3 issue #2861</p><p><strong>Windows 10 Pro Efficiency Mode Fix</strong></p><p>Tests window container vs WebView content visibility</p><hr><p><em>Created for testing robust window visibility patterns</em></p></body></html>",
+			HTML:   "<html><head><title>About</title><style>body{font-family:Arial,sans-serif;padding:20px;background:#f0f0f0;color:#333;text-align:center;}</style></head><body><h1>Window Visibility Test</h1><p>This application tests the fixes for Gails issue #2861</p><p><strong>Windows 10 Pro Efficiency Mode Fix</strong></p><p>Tests window container vs WebView content visibility</p><hr><p><em>Created for testing robust window visibility patterns</em></p></body></html>",
 		})
 	})
 

@@ -1,4 +1,4 @@
-import type { WizardState, DependencyStatus, DockerStatus, UserConfig, WailsConfig, GlobalDefaults } from './types';
+import type { WizardState, DependencyStatus, UserConfig, WailsConfig, GlobalDefaults } from './types';
 
 const API_BASE = '/api';
 
@@ -9,27 +9,6 @@ export async function getState(): Promise<WizardState> {
 
 export async function checkDependencies(): Promise<DependencyStatus[]> {
   const response = await fetch(`${API_BASE}/dependencies/check`);
-  return response.json();
-}
-
-export async function getDockerStatus(): Promise<DockerStatus> {
-  const response = await fetch(`${API_BASE}/docker/status`);
-  return response.json();
-}
-
-export async function buildDockerImage(): Promise<{ status: string }> {
-  const response = await fetch(`${API_BASE}/docker/build`, { method: 'POST' });
-  return response.json();
-}
-
-export interface DockerStartBackgroundResponse {
-  started: boolean;
-  reason?: string;
-  status: DockerStatus;
-}
-
-export async function startDockerBuildBackground(): Promise<DockerStartBackgroundResponse> {
-  const response = await fetch(`${API_BASE}/docker/start-background`, { method: 'POST' });
   return response.json();
 }
 

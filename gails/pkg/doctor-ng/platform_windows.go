@@ -153,28 +153,6 @@ func (d *Doctor) checkCommonDependencies() {
 		Required: true,
 		Category: "frontend",
 	})
-
-	dockerVersion, dockerStatus := d.checkCommand("docker", "--version")
-	if dockerStatus == StatusOK {
-		dockerVersion = strings.TrimPrefix(dockerVersion, "Docker version ")
-		if idx := strings.Index(dockerVersion, ","); idx > 0 {
-			dockerVersion = dockerVersion[:idx]
-		}
-	}
-	d.report.Dependencies = append(d.report.Dependencies, &Dependency{
-		Name:    "docker",
-		Version: dockerVersion,
-		Status:  dockerStatus,
-		InstallCommand: windowsInstallCmd(
-			"winget install Docker.DockerDesktop",
-			"Download from https://docker.com/",
-			"choco install docker-desktop",
-			"Download from https://docker.com/",
-		),
-		Required:    false,
-		Category:    "optional",
-		Description: "For cross-compilation",
-	})
 }
 
 func (d *Doctor) runDiagnostics() {

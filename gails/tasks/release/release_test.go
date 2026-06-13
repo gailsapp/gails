@@ -20,8 +20,7 @@ func setupTestEnvironment(t *testing.T) (cleanup func(), projectRoot string) {
 
 	// Create the gails project structure within temp directory
 	projectRoot = filepath.Join(tmpDir, "gails")
-	v3Dir := filepath.Join(projectRoot, "v3")
-	releaseDir := filepath.Join(v3Dir, "tasks", "release")
+	releaseDir := filepath.Join(projectRoot, "tasks", "release")
 
 	// Create all necessary directories
 	err := os.MkdirAll(releaseDir, 0755)
@@ -46,8 +45,8 @@ func TestExtractChangelogContent_EmptySections(t *testing.T) {
 	// Create a test file with only one section having content
 	testContent := `# Unreleased Changes
 
-<!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+<!--
+This file is used to collect changelog entries for the next release.
 -->
 
 ## Added
@@ -873,7 +872,7 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	defer cleanup()
 
 	// Create subdirectories to match expected structure
-	err := os.MkdirAll(filepath.Join(projectRoot, "v3", "internal", "version"), 0755)
+	err := os.MkdirAll(filepath.Join(projectRoot, "internal", "version"), 0755)
 	if err != nil {
 		t.Fatalf("Failed to create version directory: %v", err)
 	}
@@ -884,7 +883,7 @@ func TestFullReleaseWorkflow_OnlyNonEmptySections(t *testing.T) {
 	}
 
 	// Create version file
-	versionFile := filepath.Join(projectRoot, "v3", "internal", "version", "version.txt")
+	versionFile := filepath.Join(projectRoot, "internal", "version", "version.txt")
 	err = os.WriteFile(versionFile, []byte("v1.0.0-alpha.5"), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create version file: %v", err)
@@ -932,7 +931,7 @@ title: Changelog
 <!-- No security updates -->
 `
 	// The script expects the file at ../../UNRELEASED_CHANGELOG.md relative to release dir
-	unreleasedFile := filepath.Join(projectRoot, "v3", "UNRELEASED_CHANGELOG.md")
+	unreleasedFile := filepath.Join(projectRoot, "UNRELEASED_CHANGELOG.md")
 	err = os.WriteFile(unreleasedFile, []byte(unreleasedContent), 0644)
 	if err != nil {
 		t.Fatalf("Failed to create unreleased changelog: %v", err)

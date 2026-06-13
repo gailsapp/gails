@@ -1,8 +1,8 @@
-# Gails v3 iOS Architecture
+# Gails iOS Architecture
 
 ## Executive Summary
 
-This document provides a comprehensive technical architecture for iOS support in Gails v3. The implementation enables Go applications to run natively on iOS with a WKWebView frontend, maintaining the Gails philosophy of using web technologies for UI while leveraging Go for business logic.
+This document provides a comprehensive technical architecture for iOS support in Gails. The implementation enables Go applications to run natively on iOS with a WKWebView frontend, maintaining the Gails philosophy of using web technologies for UI while leveraging Go for business logic.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ This document provides a comprehensive technical architecture for iOS support in
 2. **No Network Ports**: Asset serving happens in-process via native APIs
 3. **Minimal WebView Instances**: Maximum 2 concurrent WebViews (1 primary, 1 for transitions)
 4. **Native Integration**: Deep iOS integration using Objective-C runtime
-5. **Gails v3 Compatibility**: Maintain API compatibility with existing Gails v3 applications
+5. **Gails Compatibility**: Maintain API compatibility with existing Gails applications
 
 ### High-Level Architecture
 
@@ -409,7 +409,7 @@ HandleJSMessage(windowID, jsonMessage);
 
 ## Conclusion
 
-This architecture provides a solid foundation for iOS support in Gails v3. The design prioritizes battery efficiency, native performance, and seamless integration with the existing Gails ecosystem. The proof of concept demonstrates all four required capabilities:
+This architecture provides a solid foundation for iOS support in Gails. The design prioritizes battery efficiency, native performance, and seamless integration with the existing Gails ecosystem. The proof of concept demonstrates all four required capabilities:
 
 1. ✅ **WebView Creation**: Native WKWebView with optimized configuration
 2. ✅ **Request Interception**: Custom scheme handler without network ports

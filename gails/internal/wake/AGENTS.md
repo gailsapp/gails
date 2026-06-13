@@ -1,4 +1,4 @@
-# Wake - Go-native Build System for Gails v3
+# Wake - Go-native Build System for Gails
 
 ## Overview
 

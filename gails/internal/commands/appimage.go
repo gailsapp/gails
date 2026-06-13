@@ -222,7 +222,7 @@ func generateAppImage(options *GenerateAppImageOptions) error {
 	// Check if system libraries use .relr.dyn sections (modern toolchains)
 	// If so, disable stripping as linuxdeploy's bundled strip can't handle them
 	if hasRelrDynSections() {
-		term.Infof("Detected modern toolchain (.relr.dyn sections), disabling stripping for compatibility. See: https://v3.gails.io/guides/build/linux#appimage-strip-compatibility")
+		term.Infof("Detected modern toolchain (.relr.dyn sections), disabling stripping for compatibility. See: https://gails.smileyan.cn/guides/build/linux#appimage-strip-compatibility")
 		s.SETENV("NO_STRIP", "1")
 	}
 

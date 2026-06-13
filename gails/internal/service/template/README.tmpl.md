@@ -1,10 +1,10 @@
-# Gails v3 Service Template
+# Gails Service Template
 
-This README provides an overview of the Gails v3 service template and explains how to adapt it to create your own custom service.
+This README provides an overview of the Gails service template and explains how to adapt it to create your own custom service.
 
 ## Overview
 
-The service template provides a basic structure for creating a Gails v3 service. A service in Gails v3 is a Go package that can be integrated into your Gails application to provide specific functionality, handle HTTP requests, and interact with the frontend.
+The service template provides a basic structure for creating a Gails service. A service in Gails is a Go package that can be integrated into your Gails application to provide specific functionality, handle HTTP requests, and interact with the frontend.
 
 ## Template Structure
 

@@ -1,8 +1,8 @@
-# Gails v3 Android Architecture
+# Gails Android Architecture
 
 ## Executive Summary
 
-This document provides a comprehensive technical architecture for Android support in Gails v3. The implementation enables Go applications to run natively on Android with an Android WebView frontend, maintaining the Gails philosophy of using web technologies for UI while leveraging Go for business logic.
+This document provides a comprehensive technical architecture for Android support in Gails. The implementation enables Go applications to run natively on Android with an Android WebView frontend, maintaining the Gails philosophy of using web technologies for UI while leveraging Go for business logic.
 
 Unlike iOS which uses CGO with Objective-C, Android uses JNI (Java Native Interface) to bridge between Java/Kotlin and Go. The Go code is compiled as a shared library (`.so`) that is loaded by the Android application at runtime.
 
@@ -31,7 +31,7 @@ Unlike iOS which uses CGO with Objective-C, Android uses JNI (Java Native Interf
 1. **Battery Efficiency First**: All architectural decisions prioritize battery life
 2. **No Network Ports**: Asset serving happens in-process via `WebViewAssetLoader`
 3. **JNI Bridge Pattern**: Java Activity hosts WebView, Go provides business logic
-4. **Gails v3 Compatibility**: Maintain API compatibility with existing Gails v3 applications
+4. **Gails Compatibility**: Maintain API compatibility with existing Gails applications
 5. **Follow Fyne's gomobile pattern**: Use `-buildmode=c-shared` for native library
 
 ### High-Level Architecture
@@ -277,7 +277,7 @@ func (w *androidWebviewWindow) setBackgroundColour(col RGBA)  // Set WebView bg
 
 **Purpose**: Configure base URL for Android asset serving.
 
-**Location**: `v3/internal/assetserver/assetserver_android.go`
+**Location**: `internal/assetserver/assetserver_android.go`
 
 **Build Tag**: `//go:build android`
 
@@ -994,7 +994,7 @@ cd examples/android && go mod tidy
 
 ## Conclusion
 
-This architecture provides a solid foundation for Android support in Gails v3. The design prioritizes:
+This architecture provides a solid foundation for Android support in Gails. The design prioritizes:
 
 1. **Compatibility**: Same Go code runs on all platforms
 2. **Performance**: No network overhead, native rendering

@@ -52,7 +52,7 @@ func getUnreleasedChangelogTemplate() string {
 	return `# Unreleased Changes
 
 <!-- 
-This file is used to collect changelog entries for the next v3 alpha release.
+This file is used to collect changelog entries for the next release.
 Add your changes under the appropriate sections below.
 
 Guidelines:
@@ -276,9 +276,9 @@ func copyFile(src, dst string) error {
 
 // updateVersion increments the version number properly handling semantic versioning
 // Examples:
-// v3.0.0-alpha.12 -> v3.0.0-alpha.13
-// v3.0.0 -> v3.0.1
-// v3.0.0-beta.1 -> v3.0.0-beta.2
+// v1.0.0-alpha.12 -> v1.0.0-alpha.13
+// v1.0.0 -> v1.0.1
+// v1.0.0-beta.1 -> v1.0.0-beta.2
 func updateVersion() string {
 	currentVersionData, err := os.ReadFile(versionFile)
 	checkError(err)
@@ -314,7 +314,7 @@ func computeNextVersion(currentVersion string) string {
 }
 
 // incrementPatchVersion increments the patch version of a semantic version
-// e.g., v3.0.0 -> v3.0.1
+// e.g., v1.0.0 -> v1.0.1
 func incrementPatchVersion(version string) string {
 	versionWithoutV := strings.TrimPrefix(version, "v")
 	parts := strings.Split(versionWithoutV, ".")
@@ -578,7 +578,7 @@ func runRelease(opts releaseOptions) error {
 		return errors.New("no changes were staged for commit")
 	}
 
-	commitMessage := fmt.Sprintf("chore(v3): bump to %s and update changelog [skip ci]", newVersion)
+	commitMessage := fmt.Sprintf("chore: bump to %s and update changelog [skip ci]", newVersion)
 	if err := git.commit(commitMessage); err != nil {
 		return fmt.Errorf("failed to commit release changes: %w", err)
 	}
@@ -655,7 +655,7 @@ func applyChangelogUpdates(newVersion, changelogContent string) error {
 func buildReleaseBody(version, changelogContent string) string {
 	trimmed := strings.TrimSpace(changelogContent)
 	sections := []string{
-		fmt.Sprintf("## Gails v3 Alpha Release - %s", version),
+		fmt.Sprintf("## Release - %s", version),
 		"",
 		trimmed,
 		"",

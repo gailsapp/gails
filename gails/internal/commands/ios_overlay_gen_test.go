@@ -15,10 +15,10 @@ func TestRepoRootFrom(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "finds root with v3/internal/commands as direct child",
+			name: "finds root with internal/commands as direct child",
 			setup: func(t *testing.T) string {
 				root := t.TempDir()
-				if err := os.MkdirAll(filepath.Join(root, "v3", "internal", "commands"), 0o755); err != nil {
+				if err := os.MkdirAll(filepath.Join(root, "internal", "commands"), 0o755); err != nil {
 					t.Fatal(err)
 				}
 				return root
@@ -29,7 +29,7 @@ func TestRepoRootFrom(t *testing.T) {
 			name: "walks up one level",
 			setup: func(t *testing.T) string {
 				root := t.TempDir()
-				if err := os.MkdirAll(filepath.Join(root, "v3", "internal", "commands"), 0o755); err != nil {
+				if err := os.MkdirAll(filepath.Join(root, "internal", "commands"), 0o755); err != nil {
 					t.Fatal(err)
 				}
 				// Probe is one level deeper than root
@@ -43,7 +43,7 @@ func TestRepoRootFrom(t *testing.T) {
 			want: "",
 		},
 		{
-			name: "returns error when v3/internal/commands not found within 10 levels",
+			name: "returns error when internal/commands not found within 10 levels",
 			setup: func(t *testing.T) string {
 				return t.TempDir()
 			},
@@ -68,10 +68,10 @@ func TestRepoRootFrom(t *testing.T) {
 			if tc.wantErr {
 				return
 			}
-			// Assert the returned path contains v3/internal/commands
-			wantPath := filepath.Join(got, "v3", "internal", "commands")
+			// Assert the returned path contains internal/commands
+			wantPath := filepath.Join(got, "internal", "commands")
 			if _, err := os.Stat(wantPath); err != nil {
-				t.Errorf("returned root %q does not contain v3/internal/commands: %v", got, err)
+				t.Errorf("returned root %q does not contain internal/commands: %v", got, err)
 			}
 		})
 	}
@@ -85,11 +85,11 @@ func TestIOSOverlayGen_EmptyOut(t *testing.T) {
 }
 
 // TestIOSOverlayGen_WritesOverlay covers the happy path: scaffold a fake
-// repo root with the v3/internal/commands/build_assets/ios/main_ios.go
+// repo root with the internal/commands/build_assets/ios/main_ios.go
 // template, call IOSOverlayGen, and assert both files were created.
 func TestIOSOverlayGen_WritesOverlay(t *testing.T) {
 	root := t.TempDir()
-	tmplDir := filepath.Join(root, "v3", "internal", "commands", "build_assets", "ios")
+	tmplDir := filepath.Join(root, "internal", "commands", "build_assets", "ios")
 	if err := os.MkdirAll(tmplDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -113,16 +113,16 @@ func TestIOSOverlayGen_WritesOverlay(t *testing.T) {
 	// Stub repoRoot to return our fixture root. We can't change the
 	// package-level repoRoot; instead we chdir to a position where
 	// repoRoot() (which uses Getwd) would find our fixture. To do that
-	// we walk up: probe is a deep tempdir that has v3/... under it.
-	// Easier: make a parent that contains the v3 dir.
+	// we walk up: probe is a deep tempdir that has internal/... under it.
+	// Easier: make a parent that contains the internal dir.
 	parent := filepath.Dir(appDir) // appDir is e.g. /tmp/xxx/001, parent is /tmp/xxx
-	// Move the v3 dir from root to parent. We already created it under
+	// Move the internal dir from root to parent. We already created it under
 	// root; move it.
-	if err := os.Rename(filepath.Join(root, "v3"), filepath.Join(parent, "v3")); err != nil {
-		t.Fatalf("rename v3: %v", err)
+	if err := os.Rename(filepath.Join(root, "internal"), filepath.Join(parent, "internal")); err != nil {
+		t.Fatalf("rename internal: %v", err)
 	}
-	// Now chdir to a deeper path so repoRoot walks up to find v3/
-	deeperCwd := filepath.Join(parent, "v3", "internal", "commands")
+	// Now chdir to a deeper path so repoRoot walks up to find internal/
+	deeperCwd := filepath.Join(parent, "internal", "commands")
 	if err := os.Chdir(deeperCwd); err != nil {
 		t.Fatal(err)
 	}

@@ -18,14 +18,14 @@ type App struct{}
 
 // Greet returns a greeting message
 func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s from Wails v3 on iOS!", name)
+	return fmt.Sprintf("Hello %s from Gails on iOS!", name)
 }
 
 func main() {
 	// Create application with options
 	app := application.New(application.Options{
 		Name:        "Wails iOS PoC",
-		Description: "Proof of concept for Wails v3 on iOS",
+		Description: "Proof of concept for Gails on iOS",
 		Assets: application.AssetOptions{
 			FS: assets,
 		},

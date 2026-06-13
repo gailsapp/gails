@@ -3,7 +3,6 @@
 package doctorng
 
 import (
-	"bytes"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -158,31 +157,6 @@ func (d *Doctor) checkCommonDependencies() {
 		),
 		Required: true,
 		Category: "frontend",
-	})
-
-	dockerVersion := ""
-	dockerStatus := StatusMissing
-	output, err = exec.Command("docker", "--version").Output()
-	if err == nil {
-		dockerStatus = StatusOK
-		dockerVersion = strings.TrimSpace(string(output))
-		output = bytes.Replace(output, []byte("Docker version "), []byte(""), 1)
-		dockerVersion = strings.TrimSpace(string(output))
-	}
-
-	d.report.Dependencies = append(d.report.Dependencies, &Dependency{
-		Name:    "docker",
-		Version: dockerVersion,
-		Status:  dockerStatus,
-		InstallCommand: macInstallCmd(
-			"brew install --cask docker",
-			"",
-			"",
-			"Download from https://docker.com/",
-		),
-		Required:    false,
-		Category:    "optional",
-		Description: "For cross-compilation",
 	})
 }
 

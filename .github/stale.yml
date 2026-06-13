@@ -11,7 +11,6 @@ exemptLabels:
   - "Selected For Development"
   - bug
   - enhancement
-  - v3-alpha
   - high-priority
 # Label to use when marking an issue as stale
 staleLabel: "stale"

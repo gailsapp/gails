@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Workspace Overview
 
-The repository root (`/Users/yanshili/me/projects/gails/`) wraps the Go module at `gails/` — the active v3 codebase (a fork of Wails v3, rebranded as **Gails**, module path `github.com/gailsapp/gails`). All Go work happens inside `gails/`. The wrapper root holds `Taskfile.yaml` (delegates to the inner Taskfiles), `qodana.yaml`, and `assets/`.
+The repository root (`/Users/yanshili/me/projects/gails/`) wraps the Go module at `gails/` — the Gails codebase (a fork of Wails, module path `github.com/gailsapp/gails`). All Go work happens inside `gails/`. The wrapper root holds `Taskfile.yaml` (delegates to the inner Taskfiles), `qodana.yaml`, and `assets/`.
 
 `gails/old` is a symlink to a legacy iOS project outside the repo; ignore it.
 
@@ -44,7 +44,7 @@ go test -tags gtk3 ./...
 
 ```bash
 task test:examples                  # current platform only
-task test:examples:all              # Mac + Windows + Linux(Docker), ~10-15 min
+task test:examples:all              # Mac + Windows + Linux, ~10-15 min
 task test:example:darwin DIR=badge  # single example, one OS
 BUILD_TAGS=gtk3 task test:examples  # GTK3 legacy build (linux)
 task sanity                         # linux-only quick GTK4+GTK3 spot check
@@ -75,23 +75,16 @@ task build:server DIR=examples/server
 task test:server        # -tags server in pkg/application
 ```
 
-### Cross-compile via Docker (Linux arm64/x86_64)
-
-```bash
-task test:examples:linux:docker           # auto-detects host arch
-task test:examples:linux:docker:arm64     # native ARM64
-```
-
 ## High-Level Architecture
 
-Gails v3 is a Go framework for desktop apps with web frontend. The Go process hosts a webview (WKWebView / WebKitGTK / WebView2) that loads a bundled JS runtime; user Go methods are bound to JS via reflection + JSON-RPC.
+Gails is a Go framework for desktop apps with web frontend. The Go process hosts a webview (WKWebView / WebKitGTK / WebView2) that loads a bundled JS runtime; user Go methods are bound to JS via reflection + JSON-RPC.
 
 ### Module layout (`gails/`)
 
 - **`cmd/gails/main.go`** — CLI entrypoint. Uses `github.com/leaanthony/clir`. Subcommands wired to `internal/commands`:
   - `init`, `build`, `dev`, `package`, `doctor`, `task`, `version`
   - `generate {bindings, icons, syso, runtime, webview2bootstrapper, template, constants, .desktop, appimage, build-assets}`
-  - `update {cli, build-assets}`, `service init`, `tool {checkport, watcher, cp, buildinfo, package, version, lipo, capabilities, docker-mounts, has-cc, sign}`, `setup {signing, entitlements}`, `sign`, `ios {overlay:gen, xcode:gen}`
+  - `update {cli, build-assets}`, `service init`, `tool {checkport, watcher, cp, buildinfo, package, version, lipo, capabilities, has-cc, sign}`, `setup {signing, entitlements}`, `sign`, `ios {overlay:gen, xcode:gen}`
 - **`pkg/application/`** — **public** desktop API. Multi-platform via `application_<os>.go` build-tag files + `.m/.h` Objective-C for darwin/ios + CGO. `application.New(Options)` returns the global `*App`; manages windows, services, events, bindings, autostart, system tray, clipboard, dialogs, browser manager. `application_server.go` (`-tags server`) drops GUI for HTTP-only mode.
 - **`pkg/events/`** — Public events abstraction (multi-platform files). Generated from `tasks/events/generate.go` → run `task generate:events` after editing the event catalogue.
 - **`pkg/services/`** — Built-in services users can register: `badge`, `dock`, `fileserver`, `kvstore`, `log`, `notifications`, `sqlite`.

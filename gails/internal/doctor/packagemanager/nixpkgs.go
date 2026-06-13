@@ -40,14 +40,14 @@ func (n *Nixpkgs) Packages() Packagemap {
 	}
 
 	return Packagemap{
-		// GTK4 + WebKitGTK 6.0 (default for Wails v3)
+		// GTK4 + WebKitGTK 6.0 (default for Gails)
 		"gtk4": []*Package{
 			{Name: channel + ".gtk4", SystemPackage: true, Library: true},
 		},
 		"webkitgtk-6.0": []*Package{
 			{Name: channel + ".webkitgtk_6_0", SystemPackage: true, Library: true},
 		},
-		// GTK3 + WebKitGTK 4.1 (legacy - opt-in via -tags gtk3, scheduled for removal in v3.1)
+		// GTK3 + WebKitGTK 4.1 (legacy - opt-in via -tags gtk3, scheduled for removal)
 		"gtk3 (legacy)": []*Package{
 			{Name: channel + ".gtk3", SystemPackage: true, Library: true, Optional: true},
 		},

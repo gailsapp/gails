@@ -1,4 +1,4 @@
-// Package updater provides an in-app self-update facility for Wails v3
+// Package updater provides an in-app self-update facility for Gails
 // applications.
 //
 // The package exposes a single Updater that is reachable as `app.Updater`.

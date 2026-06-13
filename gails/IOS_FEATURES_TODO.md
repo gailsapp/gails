@@ -1,6 +1,6 @@
 # iOS Features TODO (Prioritized)
 
-This document lists potential iOS features and platform options to enhance the Gails v3 iOS runtime. Items are ordered by importance for typical app development workflows.
+This document lists potential iOS features and platform options to enhance the Gails iOS runtime. Items are ordered by importance for typical app development workflows.
 
 ## Top Priority (Implement first)
 

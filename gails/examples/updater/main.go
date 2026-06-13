@@ -1,4 +1,4 @@
-// Updater example: a minimal Wails v3 app that ships in-app updates from a
+// Updater example: a minimal Gails app that ships in-app updates from a
 // GitHub release. Three pieces wire together:
 //
 //  1. app.Updater.Init configures the source + current version.

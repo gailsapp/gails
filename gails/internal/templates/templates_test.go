@@ -55,7 +55,7 @@ func TestParseTemplate_YAML_WrongWailsVersion(t *testing.T) {
 func TestParseTemplate_JSON_Schema3_BackwardsCompat(t *testing.T) {
 	fsys := fstest.MapFS{
 		"template.json": &fstest.MapFile{
-			Data: []byte(`{"name":"Old","shortname":"old","author":"Me","description":"Old v3","version":"v0.0.1","schema":3}`),
+			Data: []byte(`{"name":"Old","shortname":"old","author":"Me","description":"Old Gails","version":"v0.0.1","schema":3}`),
 		},
 	}
 	tmpl, err := parseTemplate(fsys, "")

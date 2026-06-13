@@ -29,8 +29,6 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"gails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
 			},
 		},
 		{
@@ -40,8 +38,6 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"gails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
 			},
 		},
 		{
@@ -51,18 +47,6 @@ func TestBuildAssetsSupportObfuscation(t *testing.T) {
 				"command -v garble",
 				"garble {{.GARBLE_ARGS}} build",
 				"gails_obfuscated",
-				"-e OBFUSCATED=true",
-				"-e GARBLE_ARGS=\"{{.GARBLE_ARGS}}\"",
-			},
-		},
-		{
-			name: "cross dockerfile",
-			path: "build_assets/docker/Dockerfile.cross",
-			want: []string{
-				"go install mvdan.cc/garble",
-				`if [ "$OBFUSCATED" = "true" ]; then`,
-				"gails_obfuscated",
-				"garble ${GARBLE_ARGS} build",
 			},
 		},
 	}

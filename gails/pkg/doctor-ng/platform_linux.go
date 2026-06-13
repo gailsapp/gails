@@ -86,8 +86,6 @@ func categorizeLinuxDep(name string) string {
 		return "build-tools"
 	case name == "npm":
 		return "frontend"
-	case name == "docker":
-		return "optional"
 	default:
 		return "other"
 	}

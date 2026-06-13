@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Wails v3 iOS Build Script
-# This script builds a Wails application for iOS Simulator
+# Gails iOS Build Script
+# This script builds a Gails application for iOS Simulator
 
 set -e
 
@@ -11,7 +11,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Wails v3 iOS Build Script${NC}"
+echo -e "${GREEN}Gails iOS Build Script${NC}"
 echo "==============================="
 
 # Check for required tools
@@ -140,7 +140,7 @@ func main() {
     fmt.Println("Wails iOS Demo Starting...")
 
     // For the PoC, we'll import the iOS platform code directly
-    // In production, this would use the full Wails v3 application package
+    // In production, this would use the full Gails application package
 
     log.Println("iOS application would start here")
     // The actual iOS app initialization happens in the Objective-C layer
