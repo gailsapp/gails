@@ -102,7 +102,7 @@ jobs:
     name: Run Go Tests
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || github.base_ref == 'main'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'main')
     timeout-minutes: 25
     env:
       GOWORK: "off"
@@ -150,6 +150,18 @@ jobs:
           name: runtime-build-artifacts
           path: gails/internal/runtime/desktop/@gailsio/runtime/
 
+      - name: Verify runtime artifacts downloaded correctly
+        shell: bash
+        run: |
+          RUNTIME_DIR="gails/internal/runtime/desktop/@gailsio/runtime"
+          if [ ! -d "$RUNTIME_DIR/dist" ] || [ ! -d "$RUNTIME_DIR/types" ]; then
+            echo "Warning: Runtime artifacts not found or incomplete"
+            ls -la "$RUNTIME_DIR" 2>/dev/null || echo "Directory empty"
+            # Don't fail here as tests might still work
+          else
+            echo "✅ Runtime artifacts verified"
+          fi
+
       - name: Prepare example frontend dist stubs
         working-directory: gails
         shell: bash
@@ -164,34 +176,47 @@ jobs:
             mkdir -p "$dir/dist"
             echo "$STUB_HTML" > "$dir/dist/index.html"
           done
+          echo "✅ Frontend stubs created"
 
-
-      - name: Run tests (mac)
+      - name: Run tests (macOS)
         if: matrix.os == 'macos-latest'
         env:
           CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: gails
-        run: go test -v -timeout 10m ./...
+        run: |
+          echo "Running Go tests on macOS..."
+          go test -v -timeout 10m ./...
 
-      - name: Run tests (windows)
+      - name: Run tests (Windows)
         if: matrix.os == 'windows-latest'
         working-directory: gails
-        run: go test -v -timeout 10m ./...
+        shell: bash
+        run: |
+          echo "Running Go tests on Windows..."
+          go test -v -timeout 10m ./...
 
-      - name: Run tests (ubuntu) - GTK4 default
+      - name: Run tests (Ubuntu) - GTK4 default
         if: matrix.os == 'ubuntu-latest'
         working-directory: gails
         # Skip service tests that hang in CI due to GTK4 display requirements
-        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -v -timeout 10m -skip "TestService" ./...
+        run: |
+          echo "Running GTK4 tests on Ubuntu..."
+          dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
+            go test -v -timeout 10m -skip "TestService" ./...
 
-      - name: Run tests (ubuntu) - GTK3 legacy
+      - name: Run tests (Ubuntu) - GTK3 legacy
         if: matrix.os == 'ubuntu-latest'
         working-directory: gails
-        run: dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" go test -tags gtk3 -v -timeout 10m ./...
+        run: |
+          echo "Running GTK3 legacy tests on Ubuntu..."
+          dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
+            go test -tags gtk3 -v -timeout 10m ./...
 
       - name: Typecheck binding generator output
         working-directory: gails
-        run: task generator:test:check
+        run: |
+          echo "Typechecking binding generator output..."
+          task generator:test:check
 
   cleanup:
     name: Cleanup build artifacts
