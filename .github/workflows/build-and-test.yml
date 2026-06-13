@@ -253,8 +253,9 @@ jobs:
     env:
       GOWORK: "off"
     strategy:
-      fail-fast: false
+      fail-fast: true
       max-parallel: 6
+      node-version: [24.x]
       matrix:
         os: [ubuntu-latest]
         template:
@@ -303,6 +304,11 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache: true
           cache-dependency-path: "gails/go.sum"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
 
       - name: Install Task
         uses: arduino/setup-task@v2
