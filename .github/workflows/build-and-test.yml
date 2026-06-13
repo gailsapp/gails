@@ -106,6 +106,7 @@ jobs:
     timeout-minutes: 25
     env:
       GOWORK: "off"
+      JOBS: 4
     strategy:
       fail-fast: false
       matrix:
@@ -221,7 +222,7 @@ jobs:
 
   test_templates:
     name: Test Templates
-    needs: [test_js, test_go]
+    needs: [test_js]
     runs-on: ${{ matrix.os }}
     if: github.event_name == 'push' || github.base_ref == 'main'
     env:

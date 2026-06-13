@@ -111,6 +111,18 @@ tasks:
       - go mod tidy
       - go build -tags gtk3 -o "testbuild-{{.DIR}}-linux-gtk3"
 
+  test:examples:platform:
+    internal: true
+    vars:
+      PLATFORM: '{{.PLATFORM}}'
+      EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
+    cmds:
+      - |
+        EXAMPLE_LIST=$(echo "{{.EXAMPLEDIRS}}" | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ *//;s/ *$//')
+        TASK_BIN=$(command -v task)
+        echo "$EXAMPLE_LIST" | tr ' ' '\n' | xargs -P ${JOBS:-4} -I{} \
+          "$TASK_BIN" test:example:{{.PLATFORM}} DIR={}
+
   test:examples:all:
     summary: Builds all examples for all platforms (Mac + Windows + Linux)
     vars:
@@ -158,22 +170,22 @@ tasks:
         window-menu
         wml
     cmds:
-      - echo "Building all examples for all platforms..."
+      - echo "Building all examples for all platforms (concurrent, JOBS=${JOBS:-4})..."
       - echo "=== Building for Darwin ==="
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:darwin
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: darwin
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
       - echo "=== Building for Windows (cross-compile) ==="
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:windows
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: windows
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
       - echo "=== Building for Linux ==="
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:linux
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: linux
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
       - echo "=== Testing CLI Code ==="
       - task: test:cli
       - echo "=== Cleaning Up Test Binaries ==="
@@ -285,22 +297,22 @@ tasks:
         window-menu
         wml
     cmds:
-      - echo "Testing examples compilation..."
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:darwin
+      - echo "Testing examples compilation (concurrent, JOBS=${JOBS:-4})..."
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: darwin
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
         platforms: [darwin]
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:linux
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: linux
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
         platforms: [linux]
       # GTK3 legacy example builds are handled in CI via: BUILD_TAGS=gtk3 task test:examples
-      - for: { var: EXAMPLEDIRS }
-        task: test:example:windows
+      - task: test:examples:platform
         vars:
-          DIR: "{{.ITEM}}"
+          PLATFORM: windows
+          EXAMPLEDIRS: '{{.EXAMPLEDIRS}}'
         platforms: [windows]
       - echo "Testing CLI code..."
       - task: test:cli
