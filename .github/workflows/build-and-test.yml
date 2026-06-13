@@ -21,6 +21,14 @@ on:
 permissions:
   contents: read
 
+# Pin every JavaScript action in this workflow to the Node.js 24 runtime.
+# GitHub Actions defaults to Node 20 for action execution and will force-
+# upgrade to Node 24 on 2026-06-16. Opting in early silences the per-step
+# "Node.js 20 actions are deprecated" warning without waiting for the cut-
+# over, and keeps behaviour consistent across runner images.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
