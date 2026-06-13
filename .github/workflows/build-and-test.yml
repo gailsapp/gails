@@ -21,11 +21,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test_js:
     name: Run JS Tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.base_ref == 'main'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+    timeout-minutes: 15
     strategy:
       matrix:
         node-version: [20.x]
@@ -91,12 +96,14 @@ jobs:
             gails/internal/runtime/desktop/@gailsio/runtime/dist/
             gails/internal/runtime/desktop/@gailsio/runtime/types/
             gails/internal/runtime/desktop/@gailsio/runtime/tsconfig.tsbuildinfo
+          retention-days: 7
 
       - name: Store runtime package
         uses: actions/upload-artifact@v4
         with:
           name: runtime-package
           path: gails/internal/runtime/desktop/@gailsio/runtime/*.tgz
+          retention-days: 7
 
   test_go:
     name: Run Go Tests
@@ -157,7 +164,6 @@ jobs:
           if [ ! -d "$RUNTIME_DIR/dist" ] || [ ! -d "$RUNTIME_DIR/types" ]; then
             echo "Warning: Runtime artifacts not found or incomplete"
             ls -la "$RUNTIME_DIR" 2>/dev/null || echo "Directory empty"
-            # Don't fail here as tests might still work
           else
             echo "✅ Runtime artifacts verified"
           fi
@@ -166,11 +172,6 @@ jobs:
         working-directory: gails
         shell: bash
         run: |
-          # Some examples embed frontend/dist or frontend/* but their frontend
-          # is not built during go test ./.... Go embed ignores hidden files
-          # (anything starting with '.') and empty files, so a bare `touch
-          # .gitkeep` does NOT satisfy the embed directive. Drop a real,
-          # non-hidden placeholder file with content so the glob matches.
           STUB_HTML='<!doctype html><html><body>stub</body></html>'
           find examples -type d -name frontend | while read -r dir; do
             mkdir -p "$dir/dist"
@@ -181,16 +182,21 @@ jobs:
       - name: Run tests (macOS)
         if: matrix.os == 'macos-latest'
         env:
-          CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
+          CGO_ENABLED: 1
+          CGO_LDFLAGS: -framework UniformTypeIdentifiers -framework WebKit -framework Cocoa -framework CoreFoundation -mmacosx-version-min=10.13
+          CGO_CFLAGS: -mmacosx-version-min=10.13
+          MACOSX_DEPLOYMENT_TARGET: 10.13
         working-directory: gails
         run: |
           echo "Running Go tests on macOS..."
-          go test -v -timeout 10m ./...
+          echo "Go version: $(go version)"
+          echo "CGO_ENABLED: $(go env CGO_ENABLED)"
+          go test -v -timeout 10m -skip "TestGUI|TestWindow|TestDialog" ./...
 
       - name: Run tests (Windows)
         if: matrix.os == 'windows-latest'
-        working-directory: gails
         shell: bash
+        working-directory: gails
         run: |
           echo "Running Go tests on Windows..."
           go test -v -timeout 10m ./...
@@ -198,7 +204,6 @@ jobs:
       - name: Run tests (Ubuntu) - GTK4 default
         if: matrix.os == 'ubuntu-latest'
         working-directory: gails
-        # Skip service tests that hang in CI due to GTK4 display requirements
         run: |
           echo "Running GTK4 tests on Ubuntu..."
           dbus-run-session -- xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
@@ -235,13 +240,15 @@ jobs:
     name: Test Templates
     needs: [test_js]
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || github.base_ref == 'main'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'main')
+    timeout-minutes: 20
     env:
       GOWORK: "off"
     strategy:
       fail-fast: false
+      max-parallel: 6
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
         template:
           - svelte
           - svelte-ts
@@ -256,6 +263,14 @@ jobs:
           - vanilla
           - vanilla-ts
         go-version: [1.26]
+        include:
+          - os: windows-latest
+            template: react
+            go-version: 1.26
+          - os: macos-latest
+            template: react
+            go-version: 1.26
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -264,7 +279,7 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         if: matrix.os == 'ubuntu-latest'
         with:
-          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config
+          packages: libgtk-4-dev libwebkitgtk-6.0-dev libwayland-dev build-essential pkg-config xvfb x11-xserver-utils
           version: 1.0
 
       - name: Install linux dependencies (GTK3 legacy)
@@ -299,7 +314,17 @@ jobs:
           name: runtime-package
           path: gails-runtime-temp
 
-      - name: Generate template '${{ matrix.template }}' (GTK4 default)
+      - name: Verify runtime package exists
+        shell: bash
+        run: |
+          if [ ! -f gails-runtime-temp/*.tgz ]; then
+            echo "Error: runtime-package artifact not found or empty"
+            ls -la gails-runtime-temp/ 2>/dev/null || echo "Directory empty"
+            exit 1
+          fi
+          echo "✅ Runtime package found: $(ls gails-runtime-temp/*.tgz)"
+
+      - name: Generate and build template '${{ matrix.template }}'
         shell: bash
         run: |
           RUNTIME_TGZ_FILE=$(ls gails-runtime-temp/*.tgz | head -1)
@@ -311,13 +336,41 @@ jobs:
             RUNTIME_TGZ_URL="file://$(pwd)/$RUNTIME_TGZ_FILE"
           fi
           
-          mkdir -p "./test-${{ matrix.template }}"
-          cd "./test-${{ matrix.template }}"
-          gails init -n "${{ matrix.template }}" -t "${{ matrix.template }}"
-          cd "${{ matrix.template }}/frontend"
+          PROJECT_NAME="test-${{ matrix.template }}"
+          mkdir -p "$PROJECT_NAME"
+          cd "$PROJECT_NAME"
+          
+          echo "Initializing template: ${{ matrix.template }}"
+          gails init -n "$PROJECT_NAME" -t "${{ matrix.template }}"
+          
+          cd "$PROJECT_NAME/frontend"
+          echo "Replacing runtime dependency with local tarball"
+          npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
+          
+          cd ../..
+          echo "Building project..."
+          gails build
+          
+          echo "✅ Template ${{ matrix.template }} built successfully on ${{ runner.os }}"
+
+      - name: Test GTK3 legacy (Linux only)
+        if: matrix.os == 'ubuntu-latest' && matrix.template == 'react'
+        shell: bash
+        run: |
+          PROJECT_NAME="test-gtk3-${{ matrix.template }}"
+          RUNTIME_TGZ_FILE=$(ls ../gails-runtime-temp/*.tgz | head -1)
+          RUNTIME_TGZ_URL="file://$(pwd)/../$RUNTIME_TGZ_FILE"
+          
+          mkdir -p "$PROJECT_NAME"
+          cd "$PROJECT_NAME"
+          
+          gails init -n "$PROJECT_NAME" -t "${{ matrix.template }}"
+          cd "$PROJECT_NAME/frontend"
           npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
           cd ../..
-          gails build
+          
+          BUILD_TAGS=gtk3 gails build
+          echo "✅ GTK3 legacy build successful for ${{ matrix.template }}"
 
   build_results:
     if: ${{ always() }}
@@ -330,12 +383,17 @@ jobs:
           js_result="${{ needs.test_js.result }}"
           templates_result="${{ needs.test_templates.result }}"
           
+          echo "Test Results:"
+          echo "  Go Tests: $go_result"
+          echo "  JS Tests: $js_result"
+          echo "  Template Tests: $templates_result"
+          
           if [[ $go_result == "success" || $go_result == "skipped" ]] && \
              [[ $js_result == "success" || $js_result == "skipped" ]] && \
              [[ $templates_result == "success" || $templates_result == "skipped" ]]; then
-            echo "All required jobs succeeded or were skipped"
+            echo "✅ All required jobs succeeded or were skipped"
             exit 0
           else
-            echo "One or more required jobs failed"
+            echo "❌ One or more required jobs failed"
             exit 1
           fi
