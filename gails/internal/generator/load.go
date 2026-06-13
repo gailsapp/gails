@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"strings"
 
 	"github.com/gailsapp/gails/internal/generator/config"
 	"golang.org/x/tools/go/packages"
@@ -111,8 +112,15 @@ func LoadPackages(buildFlags []string, patterns ...string) (pkgs []*packages.Pac
 		},
 	}, rewrittenPatterns...)
 
-	// Flatten dependency tree.
-	packages.Visit(roots, nil, func(pkg *packages.Package) {
+	// Flatten dependency tree. Filter to only accept packages under the
+	// requested module path — without this filter, packages.Visit would
+	// walk the full import graph including stdlib (e.g. encoding/json)
+	// and unrelated gails packages, causing the generator to emit
+	// bindings for them and the golden-file tests to fail with
+	// "Unexpected output file" errors.
+	packages.Visit(roots, func(p *packages.Package) bool {
+		return strings.HasPrefix(p.PkgPath, "github.com/gailsapp/gails/")
+	}, func(pkg *packages.Package) {
 		if pkg.Fset != fset {
 			panic("fileset missing or not the global one")
 		}

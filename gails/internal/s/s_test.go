@@ -17,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -392,6 +393,9 @@ func TestMKDIR_Nested(t *testing.T) {
 }
 
 func TestMKDIR_CustomMode(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows file system does not honor Unix permission bits")
+	}
 	dir := t.TempDir()
 	target := filepath.Join(dir, "perms")
 	MKDIR(target, 0o700)
@@ -511,6 +515,9 @@ func TestTOUCH_CreatesEmptyFile(t *testing.T) {
 }
 
 func TestCHMOD(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows file system does not honor Unix permission bits")
+	}
 	dir := t.TempDir()
 	target := filepath.Join(dir, "f.txt")
 	if err := os.WriteFile(target, []byte("x"), 0o644); err != nil {

@@ -238,6 +238,12 @@ func COPY(source string, target string) {
 	}
 	d, err := os.Create(target)
 	checkError(err)
+	// Close d before returning. On Windows, an open file handle blocks
+	// later cleanup (e.g. t.TempDir RemoveAll) with
+	// "The process cannot access the file because it is being used by
+	// another process." On Unix this is best practice too — close
+	// explicitly rather than relying on GC to flush the writer.
+	defer closefile(d)
 	_, err = io.Copy(d, src)
 	checkError(err)
 }

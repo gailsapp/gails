@@ -16,7 +16,13 @@ type WindowsVersionInfo struct {
 }
 
 func (w *WindowsVersionInfo) IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
-	return w.Major >= major && w.Minor >= minor && w.Build >= buildNumber
+	if w.Major != major {
+		return w.Major > major
+	}
+	if w.Minor != minor {
+		return w.Minor > minor
+	}
+	return w.Build >= buildNumber
 }
 
 func GetWindowsVersionInfo() (*WindowsVersionInfo, error) {
