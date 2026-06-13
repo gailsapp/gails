@@ -277,19 +277,26 @@ jobs:
       - name: Generate template '${{ matrix.template }}' (GTK4 default)
         shell: bash
         run: |
-          # Get absolute path - use pwd -W on Windows for native paths, pwd elsewhere
+          # 获取 runtime.tgz 的绝对路径
+          RUNTIME_TGZ_FILE=$(ls gails-runtime-temp/*.tgz | head -1)
+          
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            RUNTIME_TGZ="$(cd gails-runtime-temp && pwd)/$(ls gails-runtime-temp/*.tgz | xargs basename)"
-            # 然后使用 cygpath 转换（如果需要）
+            # Windows: 转换为 Windows 风格路径，然后转为 file:// URL
+            WIN_PATH=$(cygpath -w "$RUNTIME_TGZ_FILE" | sed 's/\\/\//g')
+            RUNTIME_TGZ_URL="file:///$WIN_PATH"
           else
-            RUNTIME_TGZ="$(cd gails-runtime-temp && pwd)/$(ls gails-runtime-temp/*.tgz | xargs basename)"
+            # Linux/macOS: 直接使用绝对路径
+            RUNTIME_TGZ_URL="file://$(pwd)/$RUNTIME_TGZ_FILE"
           fi
+          
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
           gails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}/frontend
-          # Replace @gailsio/runtime version with local tarball
-          npm pkg set dependencies.@gailsio/runtime="file://$RUNTIME_TGZ"
+          
+          # 替换依赖
+          npm pkg set dependencies.@gailsio/runtime="$RUNTIME_TGZ_URL"
+          
           cd ..
           gails build
 
