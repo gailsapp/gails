@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["Build + Test"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+# Pin every JavaScript action in this workflow to the Node.js 24 runtime.
+# GitHub Actions defaults to Node 20 for action execution and will force-
+# upgrade to Node 24 on 2026-06-16. Opting in early silences the per-step
+# "Node.js 20 actions are deprecated" warning without waiting for the cut-
+# over, and keeps behaviour consistent across runner images.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    # Only create a release when the Build + Test workflow was triggered by a
+    # version tag push and completed successfully.
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+    permissions:
+      contents: write
+    outputs:
+      tag_name: ${{ steps.vars.outputs.tag_name }}
+      version: ${{ steps.vars.outputs.version }}
+    steps:
+      - name: Determine release metadata
+        id: vars
+        run: |
+          TAG="${{ github.event.workflow_run.head_branch }}"
+          VERSION="${TAG#v}"
+          echo "tag_name=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing Gails $TAG"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.vars.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag_name }}
+          name: Gails ${{ steps.vars.outputs.tag_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          make_latest: true
+
+  build-binaries:
+    name: Build ${{ matrix.target }}
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-amd64
+            goos: linux
+            goarch: amd64
+            ext: ""
+          - target: linux-arm64
+            goos: linux
+            goarch: arm64
+            ext: ""
+          - target: windows-amd64
+            goos: windows
+            goarch: amd64
+            ext: .exe
+          - target: windows-arm64
+            goos: windows
+            goarch: arm64
+            ext: .exe
+          - target: darwin-amd64
+            goos: darwin
+            goarch: amd64
+            ext: ""
+          - target: darwin-arm64
+            goos: darwin
+            goarch: arm64
+            ext: ""
+    env:
+      GOWORK: "off"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag_name }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+          cache-dependency-path: "gails/go.sum"
+
+      - name: Build gails CLI
+        working-directory: gails
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p ../dist
+          OUTPUT="../dist/gails-${{ matrix.target }}${{ matrix.ext }}"
+          go build -trimpath -ldflags="-s -w" -o "$OUTPUT" ./cmd/gails
+          ls -lh "$OUTPUT"
+
+      - name: Upload binary to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release.outputs.tag_name }}
+          files: dist/gails-${{ matrix.target }}${{ matrix.ext }}
+
+  checksums:
+    name: Generate Checksums
+    needs: [release, build-binaries]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p dist
+          gh release download "${{ needs.release.outputs.tag_name }}" \
+            -D dist \
+            -p 'gails-*'
+          ls -lh dist
+
+      - name: Generate SHA-256 checksums
+        working-directory: dist
+        run: |
+          sha256sum gails-* > checksums.txt
+          cat checksums.txt
+
+      - name: Upload checksums to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release.outputs.tag_name }}
+          files: dist/checksums.txt
